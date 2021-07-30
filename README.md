@@ -17,3 +17,9 @@ The pharma blockchain based solution will enable streamlined visibility of movem
 * npm install
 * npm start
 * Navigate to http://localhost:4000/ & connect to Metamask plugin in chrome browser for Ethereum Wallet
+
+
+
+- - - -
+
+#### Copyright @2021  [Saurabh Shankariya](https://sjshank.com "Named link title")
