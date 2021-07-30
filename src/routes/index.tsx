@@ -1,17 +1,28 @@
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import React, { Suspense, lazy } from "react";
+import React, { lazy, Suspense } from "react";
 import RouteItem from "../models/route.interface";
-import LoginComponent from "../containers/Login";
-import AdminDashboardComponent from "../containers/Admin";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import DefaultComponent from "../components/Default";
 import { Helmet } from "react-helmet";
 import {
   PHARMA_SUPPLY_CHAIN,
   APP_TITLE,
   ADMIN_DASHBOARD_TITLE,
+  SUPPLIER_DASHBOARD_TITLE,
+  MANUFACTURER_DASHBOARD_TITLE,
+  DISTRIBUTOR_DASHBOARD_TITLE,
+  PHARMA_DASHBOARD_TITLE,
 } from "../utils/constants";
-import MSpinnerComponent from "../generic/MSpinner";
+import { AdminContextProvider } from "../context/AdminContext";
+import { DialogContextProvider } from "../context/DialogContext";
+import { SupplierContextProvider } from "../context/SupplierContext";
+import { ManufacturerContextProvider } from "../context/ManufacturerContext";
+import { DistributorContextProvider } from "../context/DistributorContext";
+import { PharmaContextProvider } from "../context/PharmaContext";
+
+// Lazy loading
+
+const Default = lazy(() => import("../generic/Default"));
+const Spinner = lazy(() => import("../generic/MSpinner"));
 
 //Build app routing data array using RouteItem interface
 export const routes: Array<RouteItem> = [
@@ -20,14 +31,49 @@ export const routes: Array<RouteItem> = [
     title: APP_TITLE,
     path: "/",
     enabled: true,
-    component: LoginComponent,
+    component: lazy(() => import("../containers/Login")),
   },
   {
-    key: "router-dashboard",
+    key: "router-admin",
     title: ADMIN_DASHBOARD_TITLE,
-    path: "/dashboard",
+    path: "/admin",
     enabled: true,
-    component: AdminDashboardComponent,
+    component: lazy(() => import("../containers/Admin")),
+  },
+  {
+    key: "router-supplier",
+    title: SUPPLIER_DASHBOARD_TITLE,
+    path: "/supplier",
+    enabled: true,
+    component: lazy(() => import("../containers/Supplier")),
+  },
+  {
+    key: "router-manufacturer",
+    title: MANUFACTURER_DASHBOARD_TITLE,
+    path: "/manufacturer",
+    enabled: true,
+    component: lazy(() => import("../containers/Manufacturer")),
+  },
+  {
+    key: "router-distributor",
+    title: DISTRIBUTOR_DASHBOARD_TITLE,
+    path: "/distributor",
+    enabled: true,
+    component: lazy(() => import("../containers/Distributor")),
+  },
+  {
+    key: "router-pharma",
+    title: PHARMA_DASHBOARD_TITLE,
+    path: "/pharma",
+    enabled: true,
+    component: lazy(() => import("../containers/Pharma")),
+  },
+  {
+    key: "router-logout",
+    path: "/logout",
+    title: APP_TITLE,
+    enabled: true,
+    component: lazy(() => import("../containers/Login")),
   },
 ];
 
@@ -37,39 +83,57 @@ const AppRoute = () => {
       <Switch>
         <Suspense
           fallback={
-            <div className="">
+            <div
+              style={{
+                textAlign: "center",
+                justifyContent: "center",
+                width: "100%",
+              }}
+            >
               <CircularProgress variant="indeterminate" />
             </div>
           }
         >
-           <MSpinnerComponent />
-          {routes.map((route: RouteItem) =>
-            route.subRoutes ? (
-              route.subRoutes.map((item: RouteItem) => (
-                <div key={`${item.key}-${item.title}`}>
-                  <Helmet>
-                    <title>{`${PHARMA_SUPPLY_CHAIN} | ${route.title}`}</title>
-                  </Helmet>
-                  <Route
-                    path={`${item.path}`}
-                    component={item.component || DefaultComponent}
-                    exact
-                  />
-                </div>
-              ))
-            ) : (
-              <div key={`${route.key}-${route.title}`}>
-                <Helmet>
-                  <title>{`${PHARMA_SUPPLY_CHAIN} | ${route.title}`}</title>
-                </Helmet>
-                <Route
-                  path={`${route.path}`}
-                  component={route.component || DefaultComponent}
-                  exact
-                />
-              </div>
-            )
-          )}
+          <Spinner />
+          <DialogContextProvider>
+            <AdminContextProvider>
+              <SupplierContextProvider>
+                <ManufacturerContextProvider>
+                  <DistributorContextProvider>
+                    <PharmaContextProvider>
+                      {routes.map((route: RouteItem) =>
+                        route.subRoutes ? (
+                          route.subRoutes.map((item: RouteItem) => (
+                            <div key={`${item.key}-${item.title}`}>
+                              <Helmet>
+                                <title>{`${PHARMA_SUPPLY_CHAIN} | ${route.title}`}</title>
+                              </Helmet>
+                              <Route
+                                path={`${item.path}`}
+                                component={item.component || Default}
+                                exact
+                              />
+                            </div>
+                          ))
+                        ) : (
+                          <div key={`${route.key}-${route.title}`}>
+                            <Helmet>
+                              <title>{`${PHARMA_SUPPLY_CHAIN} | ${route.title}`}</title>
+                            </Helmet>
+                            <Route
+                              path={`${route.path}`}
+                              component={route.component || Default}
+                              exact
+                            />
+                          </div>
+                        )
+                      )}
+                    </PharmaContextProvider>
+                  </DistributorContextProvider>
+                </ManufacturerContextProvider>
+              </SupplierContextProvider>
+            </AdminContextProvider>
+          </DialogContextProvider>
         </Suspense>
       </Switch>
     </BrowserRouter>

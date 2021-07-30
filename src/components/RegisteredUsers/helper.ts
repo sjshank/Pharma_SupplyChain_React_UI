@@ -1,114 +1,13 @@
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
-import { IUserForm } from "../../models/user.interface";
-import { USER_ROLES } from "../../utils/constants";
 
 export interface IUserFields {
-  userName: {
-    value: string | any;
-    disabled?: boolean;
-  };
-  userAddress: {
-    value: string | any;
-    disabled?: boolean;
-  };
-  userLocation: {
-    value: string | any;
-    disabled?: boolean;
-  };
-  userRole: {
-    value: string | any | number;
-    disabled?: boolean;
-  };
-  userStatus?: {
-    value: string | any | number;
-    disabled?: boolean;
-  };
+  userName: string | any;
+  userAddress: string | any;
+  userLocation: string | any;
+  userRole: string | any | number;
+  userStatus?: string | any | number;
+  isDeleted: boolean | any;
 }
-
-export const getFormMetaData = (
-  formClasses: any,
-  handleInputChange: any,
-  selectChangeHandler: any
-) => {
-  const metaData: Array<IUserForm> = [
-    {
-      id: "userAddress",
-      name: "userAddress",
-      label: "Wallet Address",
-      variant: "outlined",
-      fieldType: "TextField",
-      isRequired: true,
-      isValid: false,
-      userValue: "",
-      hasValidationRule: true,
-      changeHandler: handleInputChange,
-      fieldClassname: formClasses.textField,
-      validationRule: /^\s*$/,
-    },
-    {
-      id: "userName",
-      name: "userName",
-      label: "User Name",
-      variant: "outlined",
-      fieldType: "TextField",
-      isRequired: true,
-      isValid: false,
-      userValue: "",
-      hasValidationRule: true,
-      changeHandler: handleInputChange,
-      fieldClassname: formClasses.textField,
-      validationRule: /^\s*$/,
-    },
-    {
-      id: "userLocation",
-      name: "userLocation",
-      label: "Location",
-      variant: "outlined",
-      fieldType: "TextField",
-      isRequired: true,
-      isValid: false,
-      userValue: "",
-      hasValidationRule: true,
-      changeHandler: handleInputChange,
-      fieldClassname: formClasses.textField,
-      validationRule: /^\s*$/,
-    },
-    {
-      id: "userRole",
-      name: "userRole",
-      label: "Role",
-      variant: "outlined",
-      fieldType: "Select",
-      isRequired: true,
-      isValid: false,
-      userValue: "",
-      hasValidationRule: true,
-      changeHandler: handleInputChange,
-      fieldClassname: formClasses.select,
-      validationRule: /^\s*$/,
-      dataList: USER_ROLES.DEFAULT.map((uRole) => {
-        return { key: uRole.roleName, value: uRole.roleCode };
-      }),
-    },
-    {
-      id: "userStatus",
-      name: "userStatus",
-      label: "Status",
-      fieldType: "Switch",
-      isRequired: true,
-      isValid: false,
-      userValue: false,
-      color: "primary",
-      hasValidationRule: true,
-      changeHandler: handleInputChange,
-      fieldClassname: formClasses.switch,
-      validationRule: /^\s*$/,
-      labelPlacement: "end",
-    },
-  ];
-
-  return metaData;
-};
 
 export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -131,8 +30,8 @@ export const useStyles = makeStyles((theme: Theme) =>
     createUserBtn: {
       float: "right",
       marginTop: "-35px",
-      color: "rgb(41, 187, 137)",
-      border: "1px solid rgb(41, 187, 137)",
+      // color: "rgb(41, 187, 137)",
+      // border: "1px solid rgb(41, 187, 137)",
       fontWeight: 600,
     },
     tableHeadCell: {
@@ -149,6 +48,8 @@ export const useStyles = makeStyles((theme: Theme) =>
     tableBodyCell: {
       fontSize: 12,
       padding: "8px",
+      maxWidth: "250px",
+      overflowWrap: "break-word",
     },
     status: {
       textTransform: "capitalize",
@@ -185,30 +86,3 @@ export const useFormStyles = makeStyles((theme: Theme) => ({
     color: "#1EAE98",
   },
 }));
-
-export const registeredUsersTableHeader: Array<{ name: string; id: string }> = [
-  {
-    name: "User Address",
-    id: "userAddress",
-  },
-  {
-    name: "Name",
-    id: "userName",
-  },
-  {
-    name: "Location",
-    id: "userLocation",
-  },
-  {
-    name: "Role",
-    id: "userRole",
-  },
-  {
-    name: "Status",
-    id: "userStatus",
-  },
-  {
-    name: "Action",
-    id: "action",
-  },
-];

@@ -10,6 +10,8 @@ import Chip from "@material-ui/core/Chip";
 import { IUserRole } from "../../models/user.interface";
 import { USER_ROLES } from "../../utils/constants";
 import PaperHeaderComponent from "../PaperHeader";
+import useTableHeaders from "../../hooks/useTableHeaders";
+import MTableHeadersComponent from "../../generic/TableHeaders";
 
 type UserRolesProps = {
   IconComp: React.ReactNode;
@@ -47,6 +49,11 @@ const useStyles = makeStyles((theme: Theme) =>
     roleChip: {
       fontSize: 12,
       width: "194px",
+      cursor: "pointer",
+      "&:hover": {
+        transform: "scale(1.2)",
+        transition: "all 0.3s",
+      },
     },
   })
 );
@@ -54,37 +61,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const UserRolesComponent = ({ IconComp, label }: UserRolesProps) => {
   const classes = useStyles();
   const userRoles: IUserRole[] = USER_ROLES["DEFAULT"];
-
-  const tableColumns: Array<any> = [
-    {
-      name: "Role Name",
-      id: "roleName",
-    },
-    {
-      name: "Permission",
-      id: "permission",
-    },
-  ];
-
-  const populateTableHead = (): ReactNode => {
-    return (
-      <TableHead>
-        <TableRow>
-          {tableColumns.map((col: any) => {
-            return (
-              <TableCell
-                key={col.id}
-                align="left"
-                className={classes.tableHeadCell}
-              >
-                {col.name}
-              </TableCell>
-            );
-          })}
-        </TableRow>
-      </TableHead>
-    );
-  };
+  const tableHeaders = useTableHeaders("userRoles");
 
   const populateTableBody = () => {
     return (
@@ -116,10 +93,10 @@ const UserRolesComponent = ({ IconComp, label }: UserRolesProps) => {
       />
       <MBasicTableComponent
         tableBody={populateTableBody()}
-        tableHeader={populateTableHead()}
+        tableHeader={<MTableHeadersComponent tableHeaders={tableHeaders} />}
         tableName="User Roles"
         tableId="userRoleTbl"
-        height="270px"
+        height="333px"
         stickyHeader={true}
       />
     </Paper>

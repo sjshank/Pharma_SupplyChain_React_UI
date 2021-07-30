@@ -12,9 +12,10 @@ const Web3Config = () => {
           try {
             // Request account access if needed
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-            // window.ethereum.on('accountsChanged', function (accounts) {
-            //   console.log(accounts);
-            // });
+            window.ethereum.on('accountsChanged', function (accounts) {
+              localStorage.clear();
+              location.reload();
+            });
             // Acccounts now exposed
 
             resolve(web3);

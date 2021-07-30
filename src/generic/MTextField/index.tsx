@@ -12,6 +12,8 @@ type MTextFieldProps = {
   inputProps?: object;
   value?: any;
   disabled?: boolean;
+  type?: string;
+  defaultValue?: any;
   changeHandler?: (e: React.ChangeEvent<HTMLInputElement>, param?: any) => void;
 };
 
@@ -26,12 +28,15 @@ const MTextFieldComponent = ({
   changeHandler,
   value,
   disabled,
+  type,
+  defaultValue,
 }: MTextFieldProps) => {
   return (
     <TextField
       required={required}
       id={id}
       name={name}
+      inputProps={{ type: type }}
       label={label}
       value={value}
       variant={variant}
@@ -39,6 +44,7 @@ const MTextFieldComponent = ({
       helperText={helpText}
       disabled={disabled}
       onChange={changeHandler}
+      defaultValue={defaultValue}
     />
   );
 };

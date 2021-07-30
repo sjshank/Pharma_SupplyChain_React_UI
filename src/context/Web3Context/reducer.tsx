@@ -1,4 +1,4 @@
-import { IWeb3State } from "./web3.interface";
+import { IWeb3State } from "../../models/web3.interface";
 import * as helper from "./helper";
 import * as actionTypes from "./actionTypes";
 

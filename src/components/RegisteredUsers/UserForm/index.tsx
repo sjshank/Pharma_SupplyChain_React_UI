@@ -8,9 +8,14 @@ import { IUserFields, useFormStyles } from "../helper";
 type UserFormProps = {
   userState: IUserFields;
   handleInputChange: any;
+  isEditMode: boolean;
 };
 
-const UserFormComponent = ({ userState, handleInputChange }: UserFormProps) => {
+const UserFormComponent = ({
+  userState,
+  handleInputChange,
+  isEditMode = false,
+}: UserFormProps) => {
   const formClasses = useFormStyles();
   return (
     <div>
@@ -21,8 +26,8 @@ const UserFormComponent = ({ userState, handleInputChange }: UserFormProps) => {
           name="userAddress"
           label="User Wallet Address"
           variant="outlined"
-          disabled={userState.userAddress.disabled}
-          value={userState.userAddress.value}
+          disabled={isEditMode}
+          value={userState.userAddress}
           classname={formClasses.textField}
           changeHandler={handleInputChange}
         />
@@ -34,8 +39,8 @@ const UserFormComponent = ({ userState, handleInputChange }: UserFormProps) => {
           name="userName"
           label="User Name"
           variant="outlined"
-          disabled={userState.userName.disabled}
-          value={userState.userName.value}
+          disabled={isEditMode}
+          value={userState.userName}
           classname={formClasses.textField}
           changeHandler={handleInputChange}
         />
@@ -47,8 +52,7 @@ const UserFormComponent = ({ userState, handleInputChange }: UserFormProps) => {
           name="userLocation"
           label="User Location"
           variant="outlined"
-          disabled={userState.userLocation.disabled}
-          value={userState.userLocation.value}
+          value={userState.userLocation}
           classname={formClasses.textField}
           changeHandler={handleInputChange}
         />
@@ -60,8 +64,8 @@ const UserFormComponent = ({ userState, handleInputChange }: UserFormProps) => {
           name="userRole"
           label="User Role"
           variant="outlined"
-          disabled={userState.userRole.disabled}
-          selectedValue={userState.userRole.value}
+          disabled={isEditMode}
+          selectedValue={userState.userRole}
           options={USER_ROLES.DEFAULT.map((uRole) => {
             return { key: uRole.roleName, value: uRole.roleCode };
           })}
@@ -78,8 +82,7 @@ const UserFormComponent = ({ userState, handleInputChange }: UserFormProps) => {
           labelPlacement="end"
           switchClassname={formClasses.switch}
           switchColor="primary"
-          disabled={userState.userStatus?.disabled}
-          value={userState.userStatus?.value}
+          checked={userState.userStatus}
           changeHandler={handleInputChange}
         />
       </div>

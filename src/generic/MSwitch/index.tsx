@@ -14,6 +14,7 @@ type MSwitchProps = {
   switchClassname: any;
   checked?: boolean;
   disabled?: boolean;
+  style?: any;
   changeHandler: (e: any, param?: any) => void;
 };
 
@@ -29,12 +30,14 @@ const MSwitchComponent = ({
   changeHandler,
   checked,
   disabled,
+  style,
 }: MSwitchProps) => {
   return (
     <FormControl required={required} component="fieldset">
       <FormControlLabel
         value={value}
         name={name}
+        style={style}
         control={
           <Switch
             color={switchColor}

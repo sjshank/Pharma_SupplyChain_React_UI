@@ -1,4 +1,4 @@
-import { IWeb3State } from "./web3.interface";
+import { IWeb3State } from "../../models/web3.interface";
 import Web3Config from "../../config/web3Config";
 import SupplyChain from "../../contracts/SupplyChain.json";
 

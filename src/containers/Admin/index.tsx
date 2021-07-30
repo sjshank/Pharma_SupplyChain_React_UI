@@ -1,29 +1,60 @@
-import React, { useContext, useEffect, useState } from "react";
-import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import React, { ReactNode, useContext, useEffect, useRef } from "react";
+import { createStyles, makeStyles, Theme } from "@material-ui/core";
 import DashboardLayout from "../../layout/DashboardPage";
 import GroupOutlinedIcon from "@material-ui/icons/GroupOutlined";
 import FingerprintOutlinedIcon from "@material-ui/icons/FingerprintOutlined";
 import LocalMallOutlinedIcon from "@material-ui/icons/LocalMallOutlined";
 import ContactsOutlinedIcon from "@material-ui/icons/ContactsOutlined";
 import AddShoppingCartOutlinedIcon from "@material-ui/icons/AddShoppingCartOutlined";
+import LocalShippingIcon from "@material-ui/icons/LocalShipping";
 import Grid from "@material-ui/core/Grid";
-import MetricsComponent from "../../components/Metrics";
-import AddressInfoComponent from "../../components/AddressInfo";
 import UserRolesComponent from "../../components/UserRoles";
 import SupervisedUserCircleOutlinedIcon from "@material-ui/icons/SupervisedUserCircleOutlined";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import RegisteredUsersComponent from "../../components/RegisteredUsers";
-import {
-  IUserInfo,
-  IUserInfoContext,
-} from "../../context/UserContext/userInfo.interface";
+import { IUserInfoContext } from "../../models/userInfo.interface";
 import { UserInfoContext } from "../../context/UserContext";
-import { IWeb3State } from "../../context/Web3Context/web3.interface";
+import { IWeb3State } from "../../models/web3.interface";
 import { Web3Context } from "../../context/Web3Context";
-import { ISpinnerState } from "../../context/SpinnerContext/spinner.interface";
+import { ISpinnerState } from "../../models/spinner.interface";
 import { SpinnerContext } from "../../context/SpinnerContext";
-import { USER_ROLE_LIST } from "../../utils/constants";
-import { useToasts } from "react-toast-notifications";
+import {
+  ADMIN_DASHBOARD_TITLE,
+  CONTRACT_ADDRESS,
+  REGISTERED_USERS,
+  ROLES,
+  ROLE_BRAND,
+  STORAGE_CONTRACT_ADDRESS,
+  TOTAL_BATCHES,
+  TOTAL_MATERIAL_BATCHES,
+  TOTAL_MEDICINES_DELIVERED,
+  TOTAL_MEDICINE_BATCHES,
+  USERS,
+  USER_DELETED_SUCCESS,
+  USER_REGISTERED_SUCCESS,
+  USER_ROLES_LABEL,
+  USER_ROLE_LIST,
+  USER_UPDATED_SUCCESS,
+  YOUR_ADDRESS,
+} from "../../utils/constants";
+import { IUserFields } from "../../components/RegisteredUsers/helper";
+import { populateUserListWithRoleName } from "../../utils/helpers";
+import { IAdminContext } from "../../models/admin.interface";
+import { AdminContext } from "../../context/AdminContext";
+import {
+  getTransactionData,
+  sendTransaction,
+} from "../../services/contractAPI";
+import { ToastContext } from "../../context/ToastContext";
+import { IAddressBar } from "../../models/addressbar.interface";
+import { ISummaryBar } from "../../models/summarybar.interface";
+import AddressBarComponent from "../../components/AddressBar";
+import SummaryBarComponent from "../../components/SummaryBar";
+import { IDialogContext } from "../../models/dialog.interface";
+import { DialogContext } from "../../context/DialogContext";
+import useRegisteredUsers from "../../hooks/useRegisteredUsers";
+import BatchInfoComponent from "../BatchInfo";
+import MTypographyComponent from "../../generic/MTypography";
 
 type AdminDashboardProps = {};
 
@@ -40,12 +71,46 @@ const useStyles = makeStyles((theme: Theme) =>
       color: theme.palette.text.secondary,
       borderRadius: "0px",
     },
+    registeredUserRoot: {
+      padding: theme.spacing(2),
+      textAlign: "center",
+      color: theme.palette.text.secondary,
+      minHeight: "280px",
+    },
+    label: {
+      display: "flex",
+      justifyContent: "start",
+      textAlign: "left",
+      // color: "#053742",
+    },
+    icon: {
+      textAlign: "left",
+      marginRight: "4px",
+    },
+    createUserBtn: {
+      float: "right",
+      marginTop: "-35px",
+      color: "rgb(41, 187, 137)",
+      border: "1px solid rgb(41, 187, 137)",
+      fontWeight: 600,
+    },
+    overviewTitle: {
+      textAlign: "center",
+      marginTop: 10,
+      fontWeight: 600,
+      color: "#444",
+    },
+    outerOverviewSection: {
+      padding: 10,
+      boxShadow:
+        "0px 3px 3px -2px rgb(0 0 0 / 20%), 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 1px 8px 0px rgb(0 0 0 / 12%)",
+    },
   })
 );
 
 const AdminDashboardComponent = () => {
   const classes = useStyles();
-  const { addToast } = useToasts();
+  const loadUsers = useRegisteredUsers();
 
   const userInfoContext = useContext<IUserInfoContext>(UserInfoContext);
   const { userInfo } = userInfoContext;
@@ -57,256 +122,352 @@ const AdminDashboardComponent = () => {
   const spinnerContext = useContext<ISpinnerState>(SpinnerContext);
   const { toggleSpinner } = spinnerContext;
 
-  const [dashboardState, setDashboardState] = useState<any>({
-    usersCount: 0,
-    registeredUsers: [],
-  });
+  const adminContext = useContext<IAdminContext>(AdminContext);
+  const { usersCount, registeredUsers, storeAdminData } = adminContext;
+
+  const toastContext = useContext<any>(ToastContext);
+  const { toggleToast } = toastContext;
+
+  const dialogContext = useContext<IDialogContext>(DialogContext);
+  const { updateDialogStatus } = dialogContext;
+
+  const totalMaterialPackagesShippedCountRef = useRef<number>(0);
+  const totalMedicineBatchesShippedCountRef = useRef<number>(0);
+  const totalMedicineSubBatchesDeliveredCountRef = useRef<number>(0);
 
   useEffect(() => {
     try {
+      if (contractInstance && registeredUsers.length === 0) {
+        toggleSpinner();
+        loadUsers(contractInstance, selectedAccount)
+          .then((res) => {
+            if (Array.isArray(res)) {
+              const { _users, activeUsersCount } =
+                populateUserListWithRoleName(res);
+              _users.forEach((user: any) => {
+                //total material shipped count
+                if (USER_ROLE_LIST[user.userRole] == "manufacturer") {
+                  const totalMaterialPackagesCountResponse = getTransactionData(
+                    contractInstance,
+                    "getTotalMaterialPackagesShippedCount",
+                    selectedAccount,
+                    user.userAddress
+                  );
+                  totalMaterialPackagesCountResponse.then((res: any) => {
+                    totalMaterialPackagesShippedCountRef.current =
+                      totalMaterialPackagesShippedCountRef.current +
+                      parseInt(res);
+                  });
+                }
+                //total medicine shipped count
+                if (USER_ROLE_LIST[user.userRole] == "distributor") {
+                  const totalMedicineBatchesCountResponse = getTransactionData(
+                    contractInstance,
+                    "getTotalMedicineBatchesShippedCount",
+                    selectedAccount,
+                    user.userAddress
+                  );
+                  totalMedicineBatchesCountResponse.then((res: any) => {
+                    totalMedicineBatchesShippedCountRef.current =
+                      totalMedicineBatchesShippedCountRef.current +
+                      parseInt(res);
+                  });
+                }
+                //total medicine delivered count
+                if (USER_ROLE_LIST[user.userRole] == "pharma") {
+                  const totalMedicineSubBatchesCountResponse =
+                    getTransactionData(
+                      contractInstance,
+                      "getTotalMedicineSubBatchesDeliveredCount",
+                      selectedAccount
+                    );
+                  totalMedicineSubBatchesCountResponse.then((res: any) => {
+                    totalMedicineSubBatchesDeliveredCountRef.current =
+                      totalMedicineSubBatchesDeliveredCountRef.current +
+                      parseInt(res);
+                  });
+                }
+              });
+              storeAdminData(activeUsersCount, _users);
+            }
+          })
+          .catch((e: any) => {
+            toggleToast("error", e?.errorMessage);
+          })
+          .finally(() => {
+            setTimeout(() => {
+              toggleSpinner();
+            }, 200);
+          });
+      }
+    } catch (e) {
       toggleSpinner();
-      const userList = contractInstance.methods
-        .getAllRegisteredUsers()
-        .call({ from: userInfo.userAddress })
-        .then((response: any) => {
-          if (Array.isArray(response)) {
-            const _users = response.map((user: any) => {
-              return {
-                ...user,
-                userRole: parseInt(user.userRole),
-                userRoleName: USER_ROLE_LIST[parseInt(user.userRole)],
-              };
-            });
-            setDashboardState({
-              ...dashboardState,
-              usersCount: _users.length,
-              registeredUsers: _users,
-            });
-          }
-        });
-      toggleSpinner();
-    } catch (e: any) {
-      toggleSpinner();
+      toggleToast("error", e?.errorMessage);
     }
-    return () => {
-      setDashboardState({
-        ...dashboardState,
-        usersCount: 0,
-        registeredUsers: [],
-      });
-    };
   }, []);
 
-  const createUserHandler = async (userObject: any) => {
-    toggleSpinner();
-    await contractInstance.methods
-      .registerUser(
-        // userObject.userAddress.value,
-        // userObject.userName.value,
-        // userObject.userLocation.value,
-        // userObject.userRole.value,
-        // "Active"
-        "0xf2a42F8A5329Ae4CD259d3ac1Ddf2CEE6002f0dc",
-        "USER_SUP",
-        "Maharashtra",
-        1,
-        "Active"
-      )
-      .send({ from: selectedAccount })
-      .then(async (res: any) => {
-        const _result = await contractInstance.methods
-          .getAllRegisteredUsers()
-          .call({ from: selectedAccount });
-        if (_result) {
-          toggleSpinner();
-          addToast("User registered successfully !", {
-            appearance: "success",
-          });
-        }
-        // setDashboardState({
-        //   ...dashboardState,
-        //   usersCount: _result.length,
-        //   registeredUsers: _result,
-        // });
-      })
-      .catch((err: any) => {
-        toggleSpinner();
-        console.error("---Error while creating new user---", err);
-      });
+  const _showSuccessToast = (msg: string, data: any) => {
+    toggleToast("success", msg);
+    const { _users, activeUsersCount } = populateUserListWithRoleName(data);
+    storeAdminData(activeUsersCount, _users);
   };
 
-  const editUserHandler = async (userObject: any) => {
-    toggleSpinner();
-    await contractInstance.methods
-      .updateUser(
-        // userObject.userAddress.value,
-        // userObject.userName.value,
-        // userObject.userLocation.value,
-        // userObject.userRole.value,
-        // "Active"
-        "0xf2a42F8A5329Ae4CD259d3ac1Ddf2CEE6002f0dc",
-        "USER_SUPPLIER",
-        "MH",
-        1,
-        "Active"
-      )
-      .send({ from: selectedAccount })
-      .then(async (res: any) => {
-        const _result = await contractInstance.methods
-          .getAllRegisteredUsers()
-          .call({ from: selectedAccount });
-        if (_result) {
-          toggleSpinner();
-          addToast("User updated successfully !", {
-            appearance: "success",
+  //Create user
+  const createUserHandler = async (userObject: IUserFields) => {
+    try {
+      toggleSpinner();
+      const result: Promise<any> = sendTransaction(
+        contractInstance,
+        "registerUser",
+        selectedAccount,
+        userObject.userAddress,
+        userObject.userName,
+        userObject.userLocation,
+        userObject.userRole,
+        userObject.userStatus ? "Active" : "Inactive"
+      );
+      result
+        .then((res: any) => {
+          loadUsers(contractInstance, selectedAccount).then((res: any) => {
+            if (Array.isArray(res)) {
+              _showSuccessToast(USER_REGISTERED_SUCCESS, res);
+            }
           });
-        }
-      })
-      .catch((err: any) => {
-        toggleSpinner();
-        console.error("---Error while updating user---", err);
-      });
+        })
+        .catch((e: any) => {
+          toggleToast("error", e?.errorMessage);
+        })
+        .finally(() => {
+          toggleSpinner();
+          updateDialogStatus(false, false);
+        });
+    } catch (e) {
+      toggleSpinner();
+      toggleToast("error", e?.errorMessage);
+    }
   };
 
+  //Edit user
+  const editUserHandler = async (userObject: IUserFields) => {
+    try {
+      toggleSpinner();
+      const result: Promise<any> = sendTransaction(
+        contractInstance,
+        "updateUser",
+        selectedAccount,
+        userObject.userAddress,
+        userObject.userLocation,
+        userObject.userStatus ? "Active" : "Inactive"
+      );
+      result
+        .then((res: any) => {
+          loadUsers(contractInstance, selectedAccount).then((res: any) => {
+            _showSuccessToast(USER_UPDATED_SUCCESS, res);
+          });
+        })
+        .catch((e: any) => {
+          toggleToast("error", e?.errorMessage);
+        })
+        .finally(() => {
+          toggleSpinner();
+          updateDialogStatus(false, false);
+        });
+    } catch (e) {
+      toggleSpinner();
+      toggleToast("error", e?.errorMessage);
+    }
+  };
+
+  //Delete user
   const deletUserHandler = async (userObject: any) => {
-    toggleSpinner();
-    await contractInstance.methods
-      .deleteUser("0xf2a42F8A5329Ae4CD259d3ac1Ddf2CEE6002f0dc")
-      .send({ from: selectedAccount })
-      .then(async (res: any) => {
-        const _result = await contractInstance.methods
-          .getAllRegisteredUsers()
-          .call({ from: selectedAccount });
-        if (_result) {
-          console.log(_result);
-          toggleSpinner();
-          addToast("User deleted successfully !", {
-            appearance: "success",
+    try {
+      toggleSpinner();
+      const result: Promise<any> = sendTransaction(
+        contractInstance,
+        "deleteUser",
+        selectedAccount,
+        userObject.userAddress
+      );
+      result
+        .then((res: any) => {
+          loadUsers(contractInstance, selectedAccount).then((res: any) => {
+            _showSuccessToast(USER_DELETED_SUCCESS, res);
           });
-        }
-      })
-      .catch((err: any) => {
-        toggleSpinner();
-        console.error("---Error while updating user---", err);
-      });
+        })
+        .catch((e: any) => {
+          toggleToast("error", e?.errorMessage);
+        })
+        .finally(() => {
+          toggleSpinner();
+          updateDialogStatus(false, false);
+        });
+    } catch (e) {
+      toggleSpinner();
+      toggleToast("error", e?.errorMessage);
+    }
   };
 
-  const populateMetricsGrid = () => {
-    return (
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={4}>
-          <MetricsComponent
-            label="Users"
-            value={dashboardState.usersCount}
-            IconComp={
-              <GroupOutlinedIcon
-                fontSize="large"
-                style={{ color: "#29BB89" }}
-              />
-            }
+  const populateDashboardSummaryBarData = (): ISummaryBar[] => {
+    const summaryBarList: ISummaryBar[] = [
+      {
+        sizeXS: 12,
+        sizeSM: 2,
+        label: USERS,
+        value: usersCount,
+        iconComp: (
+          <GroupOutlinedIcon fontSize="large" style={{ color: "#29BB89" }} />
+        ),
+      },
+      {
+        sizeXS: 12,
+        sizeSM: 2,
+        label: ROLES,
+        value: USER_ROLE_LIST.length,
+        iconComp: (
+          <FingerprintOutlinedIcon
+            fontSize="large"
+            style={{ color: "#23049D" }}
           />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <MetricsComponent
-            label="Roles"
-            value={USER_ROLE_LIST.length}
-            IconComp={
-              <FingerprintOutlinedIcon
-                fontSize="large"
-                style={{ color: "#23049D" }}
-              />
-            }
+        ),
+      },
+      {
+        sizeXS: 12,
+        sizeSM: 3,
+        label: TOTAL_MATERIAL_BATCHES,
+        value: totalMaterialPackagesShippedCountRef.current,
+        iconComp: (
+          <LocalShippingIcon fontSize="large" style={{ color: "#FDCA40" }} />
+        ),
+      },
+      {
+        sizeXS: 12,
+        sizeSM: 3,
+        label: TOTAL_MEDICINE_BATCHES,
+        value: totalMedicineBatchesShippedCountRef.current,
+        iconComp: (
+          <LocalShippingIcon fontSize="large" style={{ color: "#FDCA40" }} />
+        ),
+      },
+      {
+        sizeXS: 12,
+        sizeSM: 2,
+        label: TOTAL_MEDICINES_DELIVERED,
+        value: totalMedicineSubBatchesDeliveredCountRef.current,
+        iconComp: (
+          <AddShoppingCartOutlinedIcon
+            fontSize="large"
+            style={{ color: "#A5E1AD" }}
           />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <MetricsComponent
-            label="Total Batches"
-            value="17"
-            IconComp={
-              <AddShoppingCartOutlinedIcon
-                fontSize="large"
-                style={{ color: "#FDCA40" }}
-              />
-            }
-          />
-        </Grid>
-      </Grid>
-    );
+        ),
+      },
+    ];
+
+    return summaryBarList;
   };
 
-  const populateAddressGrid = () => {
+  const populateUserAddressBarData = (): IAddressBar[] => {
     const _userAddress = `User Address (${userInfo.userName})`;
-    return (
-      <>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={12} lg={6}>
-            <AddressInfoComponent
-              label="Your Address"
-              value={selectedAccount}
-              IconComp={<ContactsOutlinedIcon style={{ color: "#DC2ADE" }} />}
-            />
-          </Grid>
-          <Grid item xs={12} sm={12} lg={6}>
-            <AddressInfoComponent
-              label={_userAddress}
-              value={userInfo.userAddress}
-              IconComp={<LocalMallOutlinedIcon style={{ color: "#FB3640" }} />}
-            />
-          </Grid>
-        </Grid>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={12} lg={6}>
-            <AddressInfoComponent
-              label="Pharma SupplyChain Contract Address"
-              value={contractInstance?._address}
-              IconComp={<ContactsOutlinedIcon style={{ color: "#DC2ADE" }} />}
-            />
-          </Grid>
-          <Grid item xs={12} sm={12} lg={6}>
-            <AddressInfoComponent
-              label="Storage Contract Address"
-              value={contractStorageAddress}
-              IconComp={<LocalMallOutlinedIcon style={{ color: "#FB3640" }} />}
-            />
-          </Grid>
-        </Grid>
-      </>
-    );
+    const addressBarList: IAddressBar[] = [
+      {
+        sizeXS: 12,
+        sizeSM: 12,
+        sizeLG: 6,
+        label: YOUR_ADDRESS,
+        value: selectedAccount,
+        iconComp: (
+          <ContactsOutlinedIcon
+            style={{ color: ROLE_BRAND["admin"]["bgColor"] }}
+          />
+        ),
+      },
+      {
+        sizeXS: 12,
+        sizeSM: 12,
+        sizeLG: 6,
+        label: _userAddress,
+        value: userInfo.userAddress,
+        iconComp: <LocalMallOutlinedIcon style={{ color: "#FB3640" }} />,
+      },
+    ];
+    return addressBarList;
   };
 
-  const populateUserRolesGrid = () => {
+  const populateContractAddressBarData = (): IAddressBar[] => {
+    const addressBarList: IAddressBar[] = [
+      {
+        sizeXS: 12,
+        sizeSM: 12,
+        sizeLG: 6,
+        label: CONTRACT_ADDRESS,
+        value: contractInstance?._address,
+        iconComp: <ContactsOutlinedIcon style={{ color: "#DC2ADE" }} />,
+      },
+      {
+        sizeXS: 12,
+        sizeSM: 12,
+        sizeLG: 6,
+        label: STORAGE_CONTRACT_ADDRESS,
+        value: contractStorageAddress,
+        iconComp: <LocalMallOutlinedIcon style={{ color: "#FB3640" }} />,
+      },
+    ];
+    return addressBarList;
+  };
+
+  const populateUserRolesGrid = (): ReactNode => {
     return (
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} lg={4}>
-          <UserRolesComponent
-            label="User Roles"
-            IconComp={
-              <SupervisedUserCircleOutlinedIcon style={{ color: "#65D6CE" }} />
-            }
-          />
-        </Grid>
-        <Grid item xs={12} sm={12} lg={8}>
-          {dashboardState.registeredUsers.length > 0 && (
-            <RegisteredUsersComponent
-              label="Registered Users"
-              users={dashboardState.registeredUsers}
-              IconComp={<LockOutlinedIcon style={{ color: "#321313" }} />}
-              createUser={createUserHandler}
-              editUser={editUserHandler}
-              deletUser={deletUserHandler}
-            />
-          )}
+      <Grid container spacing={3} style={{ marginTop: 20 }}>
+        <Grid item xs={12} sm={12} lg={12}>
+          <div className={classes.outerOverviewSection}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={12} lg={12}>
+                <MTypographyComponent
+                  variant="h4"
+                  text="User Directory"
+                  classname={classes.overviewTitle}
+                />
+              </Grid>
+            </Grid>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={12} lg={4}>
+                <UserRolesComponent
+                  label={USER_ROLES_LABEL}
+                  IconComp={
+                    <SupervisedUserCircleOutlinedIcon
+                      style={{ color: "#65D6CE" }}
+                    />
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} sm={12} lg={8}>
+                <RegisteredUsersComponent
+                  label={REGISTERED_USERS}
+                  users={registeredUsers}
+                  IconComp={<LockOutlinedIcon style={{ color: "#321313" }} />}
+                  createUser={createUserHandler}
+                  editUser={editUserHandler}
+                  deletUser={deletUserHandler}
+                />
+              </Grid>
+            </Grid>
+          </div>
         </Grid>
       </Grid>
     );
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout headerTitle={ADMIN_DASHBOARD_TITLE}>
       <div className={classes.root}>
-        {populateMetricsGrid()}
-        {populateAddressGrid()}
+        <SummaryBarComponent
+          summaryBarList={populateDashboardSummaryBarData()}
+        />
+        <AddressBarComponent addressBarList={populateUserAddressBarData()} />
+        <AddressBarComponent
+          addressBarList={populateContractAddressBarData()}
+        />
         {populateUserRolesGrid()}
+        <BatchInfoComponent />
       </div>
     </DashboardLayout>
   );

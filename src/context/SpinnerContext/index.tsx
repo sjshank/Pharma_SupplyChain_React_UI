@@ -1,5 +1,5 @@
 import React, { useReducer, useState } from "react";
-import { ISpinnerState } from "./spinner.interface";
+import { ISpinnerState } from "../../models/spinner.interface";
 import * as actionTypes from "./actionTypes";
 import { reducer } from "./reducer";
 

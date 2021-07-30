@@ -1,7 +1,13 @@
-import React, { MouseEventHandler, ReactNode, useContext } from "react";
+import React, {
+  lazy,
+  MouseEventHandler,
+  ReactNode,
+  Suspense,
+  useContext,
+  useState,
+} from "react";
 import Paper from "@material-ui/core/Paper";
 import TableBody from "@material-ui/core/TableBody";
-import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
 import MBasicTableComponent from "../../generic/MBasicTable";
@@ -9,24 +15,25 @@ import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import DeleteOutlinedIcon from "@material-ui/icons/DeleteOutlined";
 import MButtonComponent from "../../generic/MButton";
 import PaperHeaderComponent from "../PaperHeader";
-import { useState } from "react";
-import MFormDialogComponent from "../../generic/MFormDialog";
-import MConfirmationDialogComponent from "../../generic/MConfirmationDialog";
 import MTypographyComponent from "../../generic/MTypography";
-import { Chip } from "@material-ui/core";
-import { ROLE_BRAND } from "../../utils/constants";
-import {
-  IUserInfo,
-  IUserInfoContext,
-} from "../../context/UserContext/userInfo.interface";
-import { IUserFields, registeredUsersTableHeader, useStyles } from "./helper";
+import { Chip, Fade, Slide } from "@material-ui/core";
+import { DELETE_CONFIRMATION_TEXT, ROLE_BRAND } from "../../utils/constants";
+import { IUserInfo, IUserInfoContext } from "../../models/userInfo.interface";
+import { IUserFields, useStyles } from "./helper";
 import { IUserForm } from "../../models/user.interface";
-import { Web3Context } from "../../context/Web3Context";
-import { IWeb3State } from "../../context/Web3Context/web3.interface";
-import { SpinnerContext } from "../../context/SpinnerContext";
-import { ISpinnerState } from "../../context/SpinnerContext/spinner.interface";
 import { UserInfoContext } from "../../context/UserContext";
-import UserFormComponent from "./UserForm";
+import useTableHeaders from "../../hooks/useTableHeaders";
+import { DialogContext } from "../../context/DialogContext";
+import { IDialogContext } from "../../models/dialog.interface";
+import MTableHeadersComponent from "../../generic/TableHeaders";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import MTooltipComponent from "../../generic/MTooltip";
+
+const UserFormComponent = lazy(() => import("./UserForm"));
+const MFormDialogComponent = lazy(() => import("../../generic/MFormDialog"));
+const MConfirmationDialogComponent = lazy(
+  () => import("../../generic/MConfirmationDialog")
+);
 
 type RegisteredUsersProps = {
   IconComp: React.ReactNode;
@@ -46,152 +53,100 @@ const RegisteredUsersComponent = ({
   deletUser,
 }: RegisteredUsersProps) => {
   const classes = useStyles();
-  const [dialogStatus, setDialogStatus] = useState<any>({
-    dialogTitle: "Form Dialog",
-    openFormDialog: false,
-    openDeleteDialog: false,
-    isEditMode: false,
-  });
+  const tableHeaders = useTableHeaders("registeredUsers");
 
   const [userFormState, setUserFormState] = useState<IUserFields>({
-    userName: {
-      value: "",
-      disabled: false,
-    },
-    userAddress: {
-      value: "",
-      disabled: false,
-    },
-    userLocation: {
-      value: "",
-      disabled: false,
-    },
-    userRole: {
-      value: "",
-      disabled: false,
-    },
-    userStatus: {
-      value: "",
-      disabled: false,
-    },
+    userName: "",
+    userAddress: "",
+    userLocation: "",
+    userRole: "",
+    userStatus: true,
+    isDeleted: false,
   });
-
-  const web3Context = useContext<IWeb3State>(Web3Context);
-  const { contractInstance, selectedAccount } = web3Context;
-
-  const spinnerContext = useContext<ISpinnerState>(SpinnerContext);
-  const { toggleSpinner } = spinnerContext;
 
   const userInfoContext = useContext<IUserInfoContext>(UserInfoContext);
   const { userInfo } = userInfoContext;
 
+  const dialogContext = useContext<IDialogContext>(DialogContext);
+  const { dialogStatus, updateDialogStatus } = dialogContext;
+
+  //handle input change
   const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     _field: IUserForm
   ) => {
-    const prop: any = event.target.name;
     setUserFormState({
       ...userFormState,
-      ...userFormState[prop],
-      value: event.target.value,
+      [event.target.name]:
+        event?.target?.name === "userStatus"
+          ? event.target.checked
+          : event.target.value,
     });
   };
 
-  const toggleCreateUserDialog: MouseEventHandler = () => {
-    setDialogStatus({
-      dialogTitle: "Create User",
-      isEditMode: false,
-      openFormDialog: true,
-    });
-  };
-
-  const toggleEditUserDialog = (data: IUserInfo) => {
+  //open create user dialog
+  const toggleCreateUserDialog: any = () => {
     setUserFormState({
       ...userFormState,
-      userAddress: { value: data.userAddress, disabled: true },
-      userName: { value: data.userName },
-      userLocation: { value: data.userLocation },
-      userRole: { value: data.userRole },
+      userAddress: "",
+      userName: "",
+      userLocation: "",
+      userRole: "",
+      userStatus: true,
     });
-    setDialogStatus({
-      dialogTitle: "Edit User",
-      isEditMode: true,
-      openFormDialog: true,
-    });
+    updateDialogStatus(true, false, "Create User", false);
   };
 
-  const toggleDeleteUserDialog = (data: IUserInfo) => {
-    setUserFormState({
-      ...userFormState,
-      userAddress: { value: data.userAddress, disabled: true },
-      userName: { value: data.userName },
-      userLocation: { value: data.userLocation },
-      userRole: { value: data.userRole },
-    });
-    setDialogStatus({
-      dialogTitle: "Delete User",
-      openDeleteDialog: true,
-    });
+  //open edit user dialog
+  const toggleEditUserDialog: any = (data: IUserFields) => {
+    if (!data.isDeleted) {
+      setUserFormState({
+        ...userFormState,
+        userAddress: data.userAddress,
+        userName: data.userName,
+        userLocation: data.userLocation,
+        userRole: data.userRole,
+        userStatus: data.userStatus === "Active",
+      });
+      updateDialogStatus(true, false, "Edit User Details", true);
+    }
   };
 
+  //open delete user dialog
+  const toggleDeleteUserDialog: any = (data: IUserFields) => {
+    if (!data.isDeleted) {
+      setUserFormState({
+        ...userFormState,
+        userAddress: data.userAddress,
+        userName: data.userName,
+        userLocation: data.userLocation,
+        userRole: data.userRole,
+        userStatus: data.userStatus === "Active",
+      });
+      updateDialogStatus(false, true, "Delete User", false);
+    }
+  };
+
+  //close dialog
   const closeDialog: MouseEventHandler = () => {
-    setDialogStatus({
-      openFormDialog: false,
-      openDeleteDialog: false,
-    });
-  };
-
-  const handleCreateNewuserAction: MouseEventHandler = async () => {
-    await createUser(userFormState);
-    setDialogStatus({
-      openFormDialog: false,
-    });
-  };
-
-  const handleEdituserAction: MouseEventHandler = async () => {
-    await editUser(userFormState);
-    setDialogStatus({
-      openFormDialog: false,
-    });
-  };
-
-  const handleDeleteUserAction: MouseEventHandler = async () => {
-    await deletUser(userFormState);
-    setDialogStatus({
-      openDeleteDialog: false,
-    });
-  };
-
-  const populateTableHead = (): ReactNode => {
-    return (
-      <TableHead>
-        <TableRow>
-          {registeredUsersTableHeader.map((col: any) => {
-            return (
-              <TableCell
-                key={col.id}
-                align="left"
-                className={classes.tableHeadCell}
-              >
-                {col.name}
-              </TableCell>
-            );
-          })}
-        </TableRow>
-      </TableHead>
-    );
+    updateDialogStatus(false, false);
   };
 
   const populateTableBody = (): ReactNode => {
     return (
       <TableBody>
+        {users.length === 0 && (
+          <TableRow>
+            <TableCell colSpan={tableHeaders.length} align="center">
+              No records found.
+            </TableCell>
+          </TableRow>
+        )}
         {users &&
           users.map((row: IUserInfo) => (
             <TableRow
               key={row.userAddress}
-              className={
-                row.userStatus !== "Active" ? classes.inActiveStatusCell : ""
-              }
+              className={row.isDeleted ? classes.inActiveStatusCell : ""}
             >
               <TableCell align="left" className={classes.tableBodyCell}>
                 {row.userAddress}
@@ -214,29 +169,34 @@ const RegisteredUsersComponent = ({
                 />
               </TableCell>
               <TableCell align="left" className={classes.tableBodyCell}>
-                <span className={classes.status}>{row.userStatus}</span>
+                <span className={classes.status}>
+                  {row.isDeleted ? "Deleted" : row.userStatus}
+                </span>
               </TableCell>
               <TableCell align="left" className={classes.tableBodyCell}>
-                {row.userAddress !== userInfo.userAddress &&
-                  row.userStatus !== "Inactive" && (
+                {!row.isDeleted && (
+                  <MTooltipComponent title="Edit User" placement="top">
                     <span
                       onClick={() => toggleEditUserDialog(row)}
                       className={classes.actionBtn}
                     >
                       <EditOutlinedIcon color="action" />
                     </span>
-                  )}
+                  </MTooltipComponent>
+                )}
                 {row.userAddress !== userInfo.userAddress &&
                   row.userStatus !== "Inactive" && (
-                    <span
-                      onClick={() => toggleDeleteUserDialog(row)}
-                      className={classes.actionBtn}
-                    >
-                      <DeleteOutlinedIcon
-                        color="error"
+                    <MTooltipComponent title="Delete User" placement="top">
+                      <span
+                        onClick={() => toggleDeleteUserDialog(row)}
                         className={classes.actionBtn}
-                      />
-                    </span>
+                      >
+                        <DeleteOutlinedIcon
+                          color="error"
+                          className={classes.actionBtn}
+                        />
+                      </span>
+                    </MTooltipComponent>
                   )}
               </TableCell>
             </TableRow>
@@ -259,7 +219,7 @@ const RegisteredUsersComponent = ({
             label="Submit"
             type="submit"
             color="primary"
-            clickHandler={handleCreateNewuserAction}
+            clickHandler={() => createUser(userFormState)}
           />
         )}
         {dialogStatus.isEditMode && (
@@ -268,7 +228,7 @@ const RegisteredUsersComponent = ({
             label="Submit"
             type="submit"
             color="primary"
-            clickHandler={handleEdituserAction}
+            clickHandler={() => editUser(userFormState)}
           />
         )}
       </>
@@ -287,7 +247,7 @@ const RegisteredUsersComponent = ({
           variant="contained"
           label="Delete"
           color="primary"
-          clickHandler={handleDeleteUserAction}
+          clickHandler={() => deletUser(userFormState)}
         />
       </>
     );
@@ -306,12 +266,22 @@ const RegisteredUsersComponent = ({
         classname={classes.createUserBtn}
         clickHandler={toggleCreateUserDialog}
       />
+      <MTypographyComponent
+        variant="subtitle1"
+        text={`Showing ${users.length} records`}
+        style={{ color: "#29BB89" }}
+      />
       <MBasicTableComponent
         tableBody={populateTableBody()}
-        tableHeader={populateTableHead()}
+        tableHeader={
+          <MTableHeadersComponent
+            tableHeaders={tableHeaders}
+            classes={classes}
+          />
+        }
         tableName="Registered Users"
         tableId="registeredUsersTbl"
-        height="270px"
+        height="305px"
         stickyHeader={true}
       />
       <MFormDialogComponent
@@ -320,19 +290,35 @@ const RegisteredUsersComponent = ({
         dialogId="userFormDialog"
         footerButtons={populateFormDialogFooter()}
       >
-        <UserFormComponent
-          handleInputChange={handleInputChange}
-          userState={userFormState}
-        />
+        <Suspense
+          fallback={
+            <div
+              style={{
+                textAlign: "center",
+                justifyContent: "center",
+                width: "100%",
+              }}
+            >
+              <CircularProgress variant="indeterminate" />
+            </div>
+          }
+        >
+          <UserFormComponent
+            handleInputChange={handleInputChange}
+            userState={userFormState}
+            isEditMode={dialogStatus.isEditMode}
+          />
+        </Suspense>
       </MFormDialogComponent>
+
       <MConfirmationDialogComponent
         title={dialogStatus.dialogTitle}
-        isOpen={dialogStatus.openDeleteDialog}
+        isOpen={dialogStatus.openConfirmDialog}
         dialogId="userFormDialog"
         footerButtons={populateConfirmDialogFooter()}
       >
         <MTypographyComponent
-          text="This will permanently delete user. Do you still want to proceed ?"
+          text={DELETE_CONFIRMATION_TEXT}
           variant="subtitle1"
         />
       </MConfirmationDialogComponent>

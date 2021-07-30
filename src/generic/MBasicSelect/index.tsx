@@ -18,6 +18,7 @@ type MBasicSelectProps = {
   helpText?: string;
   inputProps?: object;
   options: Array<IOption> | any;
+  placeholder?: string;
   changeHandler: (e: any, param?: any) => void;
 };
 
@@ -25,6 +26,17 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       width: "310px",
+    },
+    helpTextP: {
+      marginLeft: "10px",
+      marginRight: "10px",
+      color: "rgba(0, 0, 0, 0.54)",
+      fontSize: 10,
+      marginTop: "3px",
+      textAlign: "left",
+      lineHeight: 1.5,
+      letterSpacing: "0.0333em",
+      fontWeight: 400,
     },
   })
 );
@@ -40,29 +52,34 @@ const MSimpleSelectComponent = ({
   options,
   disabled,
   changeHandler,
+  placeholder,
 }: MBasicSelectProps) => {
   const classes = useStyles();
 
   return (
-    <FormControl required={required} variant={variant} className={classes.root}>
-      <InputLabel>{label}</InputLabel>
-      <Select
-        id={id}
-        name={name}
-        value={selectedValue}
-        onChange={changeHandler}
-        label={label}
-        disabled={disabled}
-      >
-        {options.map((option: IOption) => {
-          return (
-            <MenuItem key={option.key} value={option.value}>
-              {option.key}
-            </MenuItem>
-          );
-        })}
-      </Select>
-    </FormControl>
+    <>
+      <FormControl required={required} variant={variant} className={classname}>
+        <InputLabel>{label}</InputLabel>
+        <Select
+          id={id}
+          name={name}
+          value={selectedValue}
+          onChange={changeHandler}
+          label={label}
+          disabled={disabled}
+          placeholder={placeholder}
+        >
+          {options.map((option: IOption) => {
+            return (
+              <MenuItem key={option.key} value={option.value}>
+                {option.key}
+              </MenuItem>
+            );
+          })}
+        </Select>
+      </FormControl>
+      {helpText && <p className={classes.helpTextP}>{helpText}</p>}
+    </>
   );
 };
 
