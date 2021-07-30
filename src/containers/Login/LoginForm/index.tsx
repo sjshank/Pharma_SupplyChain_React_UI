@@ -3,21 +3,24 @@ import { makeStyles } from "@material-ui/core/styles";
 import MButtonComponent from "../../../generic/MButton";
 import MTypographyComponent from "../../../generic/MTypography";
 import MTextFieldComponent from "../../../generic/MTextField";
-import ILoginForm from "../../../models/loginForm.interface";
 import { useHistory } from "react-router";
-import getFormMetaData from "./metadataUtil";
 import { Web3Context } from "../../../context/Web3Context";
-import { IWeb3State } from "../../../context/Web3Context/web3.interface";
+import { IWeb3State } from "../../../models/web3.interface";
 import { SpinnerContext } from "../../../context/SpinnerContext";
-import { ISpinnerState } from "../../../context/SpinnerContext/spinner.interface";
-import { IUserInfoContext } from "../../../context/UserContext/userInfo.interface";
+import { ISpinnerState } from "../../../models/spinner.interface";
+import {
+  IUserInfoContext,
+} from "../../../models/userInfo.interface";
 import { UserInfoContext } from "../../../context/UserContext";
-import { USER_ROLE_LIST } from "../../../utils/constants";
-
-interface ILogin {
-  userName: string | any;
-  userAddress: string | any;
-}
+import { AUTHENTICATION_SUCCESS, ROLE_BASED_ROUTES, USER_ROLE_LIST } from "../../../utils/constants";
+import { ILoginContext } from "../../../models/login.interface";
+import { LoginContext } from "../../../context/LoginContext";
+import { useEffect } from "react";
+import {
+  getTransactionData,
+  sendTransaction,
+} from "../../../services/contractAPI";
+import { ToastContext } from "../../../context/ToastContext";
 
 const useFormStyles = makeStyles((theme) => ({
   root: {
@@ -36,6 +39,7 @@ const useFormStyles = makeStyles((theme) => ({
 }));
 
 const LoginFormComponent = () => {
+  const formClasses = useFormStyles();
   const web3Context = useContext<IWeb3State>(Web3Context);
   const { contractInstance, selectedAccount } = web3Context;
 
@@ -45,69 +49,71 @@ const LoginFormComponent = () => {
   const userInfoContext = useContext<IUserInfoContext>(UserInfoContext);
   const { userInfoAction } = userInfoContext;
 
-  const formClasses = useFormStyles();
-  const [btnDisabled, setBtnDisabled] = useState<boolean>(false);
-  const [loginState, setLoginState] = useState<ILogin>({
-    userName: "",
-    userAddress: "",
-  });
-  const errorFields = useRef(new Set());
+  const loginContext = useContext<ILoginContext>(LoginContext);
+  const { loginInfo, storeLoginInfo } = loginContext;
+
+  const toastContext = useContext<any>(ToastContext);
+  const { toggleToast } = toastContext;
+
+  const [btnDisabled, setBtnDisabled] = useState<boolean>(true);
   const history = useHistory();
 
-  const handleInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    _field: ILoginForm
-  ) => {
-    setLoginState({ ...loginState, [event.target.id]: event.target.value });
-    // const _inputVal = event.target.value;
-    // let { id, hasValidationRule, isValid, validationRule } = _field;
-    // if (hasValidationRule) {
-    //   const _pattern = new RegExp(validationRule);
-    //   const res = _pattern.test(_inputVal);
-    //   errorFields.current.add({ eleId: id, isValidData: !res });
-    // }
-    // const _isDisabledBtn = Array.from(errorFields.current).every(
-    //   (_eField: any) => {
-    //     _eField && _eField.isValidData === true;
-    //   }
-    // );
-    // setBtnDisabled(_isDisabledBtn);
+  useEffect(() => {
+    if (loginInfo && loginInfo.userAddress != "" && loginInfo.userName != "") {
+      setBtnDisabled(false);
+    } else {
+      setBtnDisabled(true);
+    }
+  }, [loginInfo]);
+
+  const inputChangeHandler = (e: any) => {
+    storeLoginInfo({ ...loginInfo, [e.target.name]: e.target.value });
   };
 
   const handleSubmitClick: MouseEventHandler = async (
     event: React.MouseEvent<HTMLInputElement>
   ) => {
-    toggleSpinner();
-    await contractInstance.methods
-      .validateUser(loginState.userAddress, loginState.userName)
-      .send({ from: selectedAccount })
-      .then(async (res: any) => {
-        if (res) {
-          const _userInfo = await contractInstance.methods
-            .getUserInfo(loginState.userAddress)
-            .call();
-          if (_userInfo) {
-            toggleSpinner();
-            const _userDetails = {
-              ..._userInfo,
-              userRole: parseInt(_userInfo.userRole),
-              userRoleName: USER_ROLE_LIST[parseInt(_userInfo.userRole)],
-            };
-            userInfoAction.setUserInfo(_userDetails);
-            history.push("/dashboard");
+    try {
+      toggleSpinner();
+      const result = sendTransaction(
+        contractInstance,
+        "validateUser",
+        selectedAccount,
+        loginInfo.userAddress,
+        loginInfo.userName
+      );
+      result
+        .then((res: any) => {
+          toggleToast("success", AUTHENTICATION_SUCCESS);
+          if (res.status) {
+            const _userInfo = getTransactionData(
+              contractInstance,
+              "getUserInfo",
+              selectedAccount,
+              loginInfo.userAddress
+            );
+            _userInfo.then((user: any) => {
+              let _userDetails = {
+                ...user,
+                userRole: parseInt(user.userRole),
+                userRoleName: USER_ROLE_LIST[parseInt(user.userRole)],
+              };
+              userInfoAction.setUserInfo(_userDetails);
+              history.push(ROLE_BASED_ROUTES[_userDetails.userRoleName]);
+            });
           }
-        }
-      })
-      .catch((err: any) => {
-        toggleSpinner();
-        console.error("---Error while validating user---", err);
-      });
+        })
+        .catch((e: any) => {
+          toggleToast("error", e?.errorMessage);
+        })
+        .finally(() => {
+          toggleSpinner();
+        });
+    } catch (e) {
+      toggleSpinner();
+      toggleToast("error", e?.errorMessage);
+    }
   };
-
-  const loginFormMetaData: Array<ILoginForm> = getFormMetaData(
-    formClasses,
-    handleInputChange
-  );
 
   return (
     <form noValidate className={formClasses.root}>
@@ -118,23 +124,31 @@ const LoginFormComponent = () => {
         align="center"
         text="Sign In"
       />
-      {loginFormMetaData &&
-        loginFormMetaData.map((field: ILoginForm) => {
-          return (
-            <div key={field.id} className={formClasses.textFieldBar}>
-              <MTextFieldComponent
-                required={field.isRequired}
-                id={field.id}
-                label={field.label}
-                variant={field.variant}
-                classname={field.fieldClassname}
-                inputProps={field}
-                helpText={field.helpText}
-                changeHandler={(e) => field.changeHandler(e, field)}
-              />
-            </div>
-          );
-        })}
+      <div className={formClasses.textFieldBar}>
+        <MTextFieldComponent
+          required={true}
+          id="userName"
+          name="userName"
+          label="User Name"
+          variant="outlined"
+          classname={formClasses.textField}
+          changeHandler={(e) => inputChangeHandler(e)}
+          value={loginInfo.userName}
+        />
+      </div>
+      <div className={formClasses.textFieldBar}>
+        <MTextFieldComponent
+          required={true}
+          id="userAddress"
+          name="userAddress"
+          label="Account Address"
+          variant="outlined"
+          classname={formClasses.textField}
+          helpText="Ethereum account address"
+          changeHandler={(e) => inputChangeHandler(e)}
+          value={loginInfo.userAddress}
+        />
+      </div>
       <div>
         <MButtonComponent
           label="Submit"
@@ -149,4 +163,4 @@ const LoginFormComponent = () => {
   );
 };
 
-export default LoginFormComponent;
+export default React.memo(LoginFormComponent);

@@ -1,4 +1,4 @@
-import { IUserInfo, IUserInfoContext } from "./userInfo.interface";
+import { IUserInfo, IUserInfoContext } from "../../models/userInfo.interface";
 
 const UserInfo_Default_State: IUserInfo = {
   userName: null,
@@ -6,6 +6,7 @@ const UserInfo_Default_State: IUserInfo = {
   userAddress: null,
   userLocation: "",
   userRoleName: "",
+  isDeleted: false,
 };
 
 export const setUserInfo = (

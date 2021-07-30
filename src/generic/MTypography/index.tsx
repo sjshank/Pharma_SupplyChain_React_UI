@@ -9,6 +9,7 @@ type MTypoProps = {
   align?: string | any;
   gutterBottom?: boolean | any;
   classname?: any;
+  style?: any;
 };
 
 const MTypographyComponent = ({
@@ -19,6 +20,7 @@ const MTypographyComponent = ({
   component,
   gutterBottom,
   classname,
+  style,
 }: MTypoProps) => {
   return (
     <Typography
@@ -28,6 +30,7 @@ const MTypographyComponent = ({
       component={component}
       gutterBottom={gutterBottom}
       className={classname}
+      style={style}
     >
       {text}
     </Typography>

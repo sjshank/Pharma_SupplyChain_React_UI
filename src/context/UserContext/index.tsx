@@ -3,7 +3,7 @@ import {
   IUserInfo,
   IUserInfoAction,
   IUserInfoContext,
-} from "./userInfo.interface";
+} from "../../models/userInfo.interface";
 import * as actionTypes from "./actionTypes";
 import { reducer } from "./reducer";
 
@@ -13,6 +13,7 @@ const UserInfo_Initial_State: IUserInfo = {
   userAddress: null,
   userLocation: "",
   userRoleName: "",
+  isDeleted:false
 };
 
 const UserInfo_Action_Initial_State: IUserInfoAction = {

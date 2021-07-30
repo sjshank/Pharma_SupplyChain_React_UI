@@ -100,6 +100,12 @@ module.exports = {
       loader: 'url-loader',
     },
     {
+      test: /\.(png|svg|jpg|gif)$/,
+      use: [
+        'file-loader',
+      ],
+    },
+    {
       test: /\.(png|svg|jpe?g|gif|woff|woff2|eot|ttf|otf|jpg)$/,
       use: [
         'file-loader',

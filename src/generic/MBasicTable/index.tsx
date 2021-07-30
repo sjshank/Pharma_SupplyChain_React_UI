@@ -27,7 +27,8 @@ const MBasicTableComponent = ({
   const useStyles = makeStyles({
     root: {
       height: height,
-      overflow: "auto",
+      overflowY: "auto",
+      overflowX: "hidden",
     },
     table: {
       width: "100%",

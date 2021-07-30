@@ -1,4 +1,4 @@
-import { ISpinnerState } from "./spinner.interface";
+import { ISpinnerState } from "../../models/spinner.interface";
 
 export const toggleSpinner = (state: ISpinnerState, action: any) => {
   const { show }: ISpinnerState = { ...state };

@@ -1,6 +1,6 @@
-import { IUserInfoContext } from "./userInfo.interface";
 import * as helper from "./helper";
 import * as actionTypes from "./actionTypes";
+import { IUserInfoContext } from "../../models/userInfo.interface";
 
 export const reducer = (
   state: IUserInfoContext,

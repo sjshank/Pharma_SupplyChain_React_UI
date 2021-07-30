@@ -6,6 +6,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Slide from "@material-ui/core/Slide";
 import { DialogContentText } from "@material-ui/core";
+import MSpinnerComponent from "../MSpinner";
 
 type MConfirmationDialogProps = {
   dialogId: string;
@@ -22,13 +23,17 @@ const useStyles = makeStyles((theme: Theme) =>
     title: {
       fontWeight: theme.typography.fontWeightBold,
       color: theme.palette.grey[800],
+      borderBottom: "1px solid rgba(0, 0, 0, 0.54)",
+    },
+    footer: {
+      // borderTop:"1px solid rgba(0, 0, 0, 0.54)"
     },
   })
 );
 
 const MConfirmationDialogComponent = ({
   dialogId,
-  isOpen=false,
+  isOpen = false,
   title,
   contentText,
   closeDialog,
@@ -44,6 +49,7 @@ const MConfirmationDialogComponent = ({
         onClose={closeDialog}
         TransitionComponent={Slide}
       >
+        <MSpinnerComponent />
         <DialogTitle title={title} className={classes.title}>
           {title}
         </DialogTitle>
@@ -51,7 +57,9 @@ const MConfirmationDialogComponent = ({
           <DialogContentText>{contentText}</DialogContentText>
           {children}
         </DialogContent>
-        <DialogActions>{footerButtons}</DialogActions>
+        <DialogActions className={classes.footer}>
+          {footerButtons}
+        </DialogActions>
       </Dialog>
     </div>
   );
