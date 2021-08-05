@@ -22,8 +22,11 @@ import ReceiptOutlinedIcon from "@material-ui/icons/ReceiptOutlined";
 import TransferWithinAStationIcon from "@material-ui/icons/TransferWithinAStation";
 import EventAvailableOutlinedIcon from "@material-ui/icons/EventAvailableOutlined";
 import {
+  MEDICINE_BATCHES_RCVD_MD,
   MEDICINE_SHIPPMENT_STATUS_LIST_AT_DISTRIBUTOR,
+  NO_RECORDS_FOUND,
   ROLE_BRAND,
+  TRACK_UPDATES,
   VERIFY_PROCEED_HELP_TEXT_AT_DIST,
 } from "../../utils/constants";
 import MTypographyComponent from "../../generic/MTypography";
@@ -37,6 +40,8 @@ import MTableHeadersComponent from "../../generic/TableHeaders";
 import { IDialogContext } from "../../models/dialog.interface";
 import { DialogContext } from "../../context/DialogContext";
 import { populateUserName } from "../../utils/helpers";
+import MedicineTitleComponent from "../MedicineTitle";
+import MTableCellComponent from "../../generic/MTableCell";
 
 type MedicineReceivedFromManuProps = {
   medicinesReceivedFromManuf: IMedicine[];
@@ -155,7 +160,7 @@ const MedicineReceivedMDComponent = ({
   medicinesReceivedFromManuf,
   userList,
   transferMedicineBatchToPharma,
-  title = "Medicine Batches",
+  title = "Medicine Batches Available",
   isReadonly = false,
   medicineTableHeaders = undefined,
 }: MedicineReceivedFromManuProps) => {
@@ -238,9 +243,19 @@ const MedicineReceivedMDComponent = ({
     updateDialogStatus(
       true,
       false,
-      "Initiate & Transfer Medicine Batch",
+      MEDICINE_BATCHES_RCVD_MD,
       false,
       "medicineRecvd"
+    );
+  };
+
+  const handleQRCodeEvent: any = (medicineDetail: any) => {
+    updateDialogStatus(
+      true,
+      false,
+      TRACK_UPDATES,
+      false,
+      medicineDetail.medicineId
     );
   };
 
@@ -250,30 +265,35 @@ const MedicineReceivedMDComponent = ({
         {medicinesReceivedFromManuf.length === 0 && (
           <TableRow>
             <TableCell colSpan={tableHeaders.length} align="center">
-              No records found.
+              {NO_RECORDS_FOUND}
             </TableCell>
           </TableRow>
         )}
         {medicinesReceivedFromManuf.map((row: IMedicine) => (
           <TableRow key={row.medicineId}>
             <TableCell align="left" className={classes.tableBodyCell}>
-              <MTooltipComponent title={row.medicineName} placement="top">
-                <span>{row.medicineName}</span>
-              </MTooltipComponent>
+              <MedicineTitleComponent
+                row={row}
+                handleQRCodeEvent={handleQRCodeEvent}
+                dialogStatus={dialogStatus}
+                closeDialog={closeDialog}
+              />
             </TableCell>
-            {!isReadonly && (
+            {/* {!isReadonly && (
               <TableCell align="left" className={classes.tableBodyCell}>
                 <MTooltipComponent title={row.description} placement="top">
                   <span>{row.description}</span>
                 </MTooltipComponent>
               </TableCell>
-            )}
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.location}
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.quantity}
-            </TableCell>
+            )} */}
+            <MTableCellComponent
+              text={row.location}
+              classname={classes.tableBodyCell}
+            />
+            <MTableCellComponent
+              text={row.quantity}
+              classname={classes.tableBodyCell}
+            />
             <TableCell align="left" className={classes.tableBodyCell}>
               <MTooltipComponent title={row.manufacturer} placement="top">
                 <span

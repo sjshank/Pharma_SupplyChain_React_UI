@@ -1,4 +1,5 @@
 import React, {
+  lazy,
   MouseEventHandler,
   ReactNode,
   useContext,
@@ -13,7 +14,6 @@ import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
 import EventAvailableOutlinedIcon from "@material-ui/icons/EventAvailableOutlined";
 import MButtonComponent from "../../generic/MButton";
-import MFormDialogComponent from "../../generic/MFormDialog";
 import { IUserInfo } from "../../models/userInfo.interface";
 import MTooltipComponent from "../../generic/MTooltip";
 import MTypographyComponent from "../../generic/MTypography";
@@ -21,19 +21,29 @@ import LocalShippingIcon from "@material-ui/icons/LocalShipping";
 import AttachFileOutlinedIcon from "@material-ui/icons/AttachFileOutlined";
 import ReceiptOutlinedIcon from "@material-ui/icons/ReceiptOutlined";
 import TransferWithinAStationIcon from "@material-ui/icons/TransferWithinAStation";
-import MConfirmationDialogComponent from "../../generic/MConfirmationDialog";
 import { IMedicine } from "../../models/medicine.interface";
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
 import { green, yellow } from "@material-ui/core/colors";
 import {
   MEDICINE_INITIATE_SHIPMENT_TEXT,
   MEDICINE_SHIPPMENT_STATUS_LIST_AT_MANUFACTURER,
+  NO_RECORDS_FOUND,
+  TRACK_UPDATES,
 } from "../../utils/constants";
-import RegisterMedicineBatchComponent from "../RegisterMedicineBatch";
 import useTableHeaders from "../../hooks/useTableHeaders";
 import MTableHeadersComponent from "../../generic/TableHeaders";
 import { IDialogContext } from "../../models/dialog.interface";
 import { DialogContext } from "../../context/DialogContext";
+import { populateUserName } from "../../utils/helpers";
+import MedicineTitleComponent from "../MedicineTitle";
+
+const MFormDialogComponent = lazy(() => import("../../generic/MFormDialog"));
+const MConfirmationDialogComponent = lazy(
+  () => import("../../generic/MConfirmationDialog")
+);
+const RegisterMedicineBatchComponent = lazy(
+  () => import("../RegisterMedicineBatch")
+);
 
 type MedicinesManufacturedProps = {
   regMedicineBatches: IMedicine[];
@@ -201,42 +211,41 @@ const MedicinesManufacturedComponent = ({
     updateDialogStatus(false, false);
   };
 
-  const populateTableBody = () => {
-    const populateUserName = (_role: string, _address: string) => {
-      const userDetails = userList.find((usr: IUserInfo) => {
-        if (
-          !usr.isDeleted &&
-          usr.userStatus === "Active" &&
-          usr.userRole === _role &&
-          usr.userAddress === _address
-        ) {
-          return usr;
-        }
-      });
-      return userDetails?.userName;
-    };
+  const handleQRCodeEvent: any = (medicineDetail: any) => {
+    updateDialogStatus(
+      true,
+      false,
+      TRACK_UPDATES,
+      false,
+      medicineDetail.medicineId
+    );
+  };
 
+  const populateTableBody = () => {
     return (
       <TableBody>
         {regMedicineBatches.length === 0 && (
           <TableRow>
             <TableCell colSpan={tableHeaders.length} align="center">
-              No records found.
+              {NO_RECORDS_FOUND}
             </TableCell>
           </TableRow>
         )}
         {regMedicineBatches.map((row: IMedicine) => (
           <TableRow key={row.medicineId}>
             <TableCell align="left" className={classes.tableBodyCell}>
-              <MTooltipComponent title={row.medicineName} placement="top">
-                <span>{row.medicineName}</span>
-              </MTooltipComponent>
+              <MedicineTitleComponent
+                row={row}
+                handleQRCodeEvent={handleQRCodeEvent}
+                dialogStatus={dialogStatus}
+                closeDialog={closeDialog}
+              />
             </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
+            {/* <TableCell align="left" className={classes.tableBodyCell}>
               <MTooltipComponent title={row.description} placement="top">
                 <span>{row.description}</span>
               </MTooltipComponent>
-            </TableCell>
+            </TableCell> */}
             <TableCell align="left" className={classes.tableBodyCell}>
               {row.location}
             </TableCell>
@@ -246,14 +255,14 @@ const MedicinesManufacturedComponent = ({
             <TableCell align="left" className={classes.tableBodyCell}>
               <MTooltipComponent title={row.distributor} placement="top">
                 <span style={{ color: "#17B978", fontWeight: 600 }}>
-                  {populateUserName("5", row.distributor)}
+                  {populateUserName("5", row.distributor, userList)}
                 </span>
               </MTooltipComponent>
             </TableCell>
             <TableCell align="left" className={classes.tableBodyCell}>
               <MTooltipComponent title={row.shipper} placement="top">
                 <span style={{ color: "#444444", fontWeight: 600 }}>
-                  {populateUserName("2", row.shipper)}
+                  {populateUserName("2", row.shipper, userList)}
                 </span>
               </MTooltipComponent>
             </TableCell>
@@ -383,7 +392,7 @@ const MedicinesManufacturedComponent = ({
     <Paper className={classes.root} elevation={3} square={true}>
       <PaperHeaderComponent
         IconComp={<EventAvailableOutlinedIcon style={{ color: "#29BB89" }} />}
-        label="Medicines Manufactured"
+        label="Medicine Batches Available"
         textVariant="button"
       />
       <MTypographyComponent

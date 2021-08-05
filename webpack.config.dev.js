@@ -9,7 +9,7 @@ module.exports = merge(common, {
   devServer: {
     contentBase: './build',
     compress: false,
-    https: false,
+    https: true,
     disableHostCheck: true,
     port: "4000",
     headers: { "Access-Control-Allow-Origin": "*" },

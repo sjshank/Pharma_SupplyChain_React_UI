@@ -16,7 +16,6 @@ export const storePharmaDashboardDetails = (
 };
 
 export const storeCustomerData = (state: IPharmaContext, action: any) => {
-  console.log(action);
   return {
     ...state,
     customers: action["customers"],

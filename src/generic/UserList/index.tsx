@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import TableBody from "@material-ui/core/TableBody";
@@ -8,10 +8,11 @@ import MBasicTableComponent from "../MBasicTable";
 import PaperHeaderComponent from "../../components/PaperHeader";
 import SupervisedUserCircleOutlinedIcon from "@material-ui/icons/SupervisedUserCircleOutlined";
 import { IUserInfo } from "../../models/userInfo.interface";
-import MTooltipComponent from "../MTooltip";
 import useTableHeaders from "../../hooks/useTableHeaders";
 import MTableHeadersComponent from "../TableHeaders";
 import MTypographyComponent from "../MTypography";
+import MTableCellComponent from "../MTableCell";
+import { NO_RECORDS_FOUND } from "../../utils/constants";
 
 type UserListProps = {
   label: string;
@@ -72,7 +73,7 @@ const UserListComponent = ({
         {users.length === 0 && (
           <TableRow>
             <TableCell colSpan={tableHeaders.length} align="center">
-              No records found.
+              {NO_RECORDS_FOUND}
             </TableCell>
           </TableRow>
         )}
@@ -83,17 +84,18 @@ const UserListComponent = ({
                 {row.userName}
               </span>
             </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              <MTooltipComponent title={row.userAddress} placement="top">
-                <span>{row.userAddress}</span>
-              </MTooltipComponent>
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.userLocation}
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.userStatus}
-            </TableCell>
+            <MTableCellComponent
+              classname={classes.tableBodyCell}
+              text={row.userAddress}
+            />
+            <MTableCellComponent
+              classname={classes.tableBodyCell}
+              text={row.userLocation}
+            />
+            <MTableCellComponent
+              classname={classes.tableBodyCell}
+              text={row.userStatus}
+            />
           </TableRow>
         ))}
       </TableBody>

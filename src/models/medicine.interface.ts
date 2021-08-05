@@ -9,4 +9,5 @@ export interface IMedicine {
   manufacturer?: string | any;
   distributor?: string | any;
   packageStatus?: string | number | any;
+  transactionBlocks?: any[];
 }

@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { createStyles, makeStyles, Theme, Grid, Grow } from "@material-ui/core";
+import { allTransactionRef } from "../../config/firebaseConfig";
 import { Web3Context } from "../../context/Web3Context";
 import { IWeb3State } from "../../models/web3.interface";
 import { ISpinnerState } from "../../models/spinner.interface";
@@ -21,17 +22,14 @@ import MSimpleSelectComponent from "../../generic/MBasicSelect";
 import {
   CUSTOMER_FORM_TEXT,
   MEDICINE_SALE_STATUS_AT_PHARMA,
+  TRACK_UPDATES,
 } from "../../utils/constants";
 import MBasicTableComponent from "../../generic/MBasicTable";
 import TableBody from "@material-ui/core/TableBody";
 import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
 import MTooltipComponent from "../../generic/MTooltip";
-import MFormDialogComponent from "../../generic/MFormDialog";
 import MButtonComponent from "../../generic/MButton";
-import MTextFieldComponent from "../../generic/MTextField";
-import { ICustomer } from "../../models/customer.interface";
-import MConfirmationDialogComponent from "../../generic/MConfirmationDialog";
 import useTableHeaders from "../../hooks/useTableHeaders";
 import MTableHeadersComponent from "../../generic/TableHeaders";
 import { IDialogContext } from "../../models/dialog.interface";
@@ -44,6 +42,14 @@ import {
   sendTransaction,
 } from "../../services/contractAPI";
 import { ToastContext } from "../../context/ToastContext";
+import MedicineTitleComponent from "../../components/MedicineTitle";
+import { IUserInfoContext } from "../../models/userInfo.interface";
+import { UserInfoContext } from "../../context/UserContext";
+import { ICustomer } from "../../models/customer.interface";
+import MConfirmationDialogComponent from "../../generic/MConfirmationDialog";
+import CustomerFormComponent from "./CustomerForm";
+import MFormDialogComponent from "../../generic/MFormDialog";
+import MTableCellComponent from "../../generic/MTableCell";
 
 type MedicineCatalogProps = {
   deliveredMedicineIds: string[];
@@ -133,8 +139,7 @@ const MedicineCatalogComponent = ({
   const loadMedicineDetails = useMedicineBatchDetails();
 
   const web3Context = useContext<IWeb3State>(Web3Context);
-  const { contractInstance, selectedAccount, contractStorageAddress } =
-    web3Context;
+  const { contractInstance, selectedAccount } = web3Context;
 
   const spinnerContext = useContext<ISpinnerState>(SpinnerContext);
   const { toggleSpinner } = spinnerContext;
@@ -144,6 +149,9 @@ const MedicineCatalogComponent = ({
 
   const toastContext = useContext<any>(ToastContext);
   const { toggleToast } = toastContext;
+
+  const userInfoContext = useContext<IUserInfoContext>(UserInfoContext);
+  const { userInfo } = userInfoContext;
 
   const [catalogState, setCatalogState] = useState<any>({
     medicineList: [] as IMedicine[],
@@ -290,6 +298,25 @@ const MedicineCatalogComponent = ({
             ...catalogState,
             saleStatus: "4",
           });
+          //store customer data against medicine in firebase
+          const medicineRef = allTransactionRef.child(
+            customerFormState.medicineId
+          );
+          medicineRef
+            .update({
+              customerInfo: {
+                buyer: customerFormState.customerName,
+                amountPaid: customerFormState.amountPaid,
+                shopName: userInfo.userName,
+                shopAddress: userInfo.userLocation,
+                dateOfSale: new Date()
+                  .toLocaleDateString()
+                  .concat(", " + new Date().toLocaleTimeString()),
+              },
+            })
+            .catch((e: any) => {
+              toggleToast("error", e?.errorMessage);
+            });
           updateDialogStatus(false, false);
         })
         .catch((e: any) => {
@@ -334,39 +361,47 @@ const MedicineCatalogComponent = ({
     }
   };
 
+  const handleQRCodeEvent: any = (medicineDetail: any) => {
+    updateDialogStatus(
+      true,
+      false,
+      TRACK_UPDATES,
+      false,
+      medicineDetail.medicineId
+    );
+  };
+
   const populateTableBody = () => {
     return (
       <TableBody>
         <TableRow key={catalogState?.medicineDetails?.medicineId}>
           <TableCell align="left" className={classes.tableBodyCell}>
-            <MTooltipComponent
-              title={catalogState?.medicineDetails?.medicineName}
-              placement="top"
-            >
-              <span>{catalogState?.medicineDetails?.medicineName}</span>
-            </MTooltipComponent>
+            <MedicineTitleComponent
+              row={catalogState?.medicineDetails}
+              handleQRCodeEvent={handleQRCodeEvent}
+              dialogStatus={dialogStatus}
+              closeDialog={closeDialog}
+            />
           </TableCell>
-          <TableCell align="left" className={classes.tableBodyCell}>
-            <MTooltipComponent
-              title={catalogState?.medicineDetails?.description}
-              placement="top"
-            >
-              <span>{catalogState?.medicineDetails?.description}</span>
-            </MTooltipComponent>
-          </TableCell>
-          <TableCell align="left" className={classes.tableBodyCell}>
-            {catalogState?.medicineDetails?.location}
-          </TableCell>
-          <TableCell align="left" className={classes.tableBodyCell}>
-            {catalogState?.medicineDetails?.quantity}
-          </TableCell>
+          <MTableCellComponent
+            classname={classes.tableBodyCell}
+            text={catalogState?.medicineDetails?.description}
+          />
+          <MTableCellComponent
+            classname={classes.tableBodyCell}
+            text={catalogState?.medicineDetails?.location}
+          />
+          <MTableCellComponent
+            classname={classes.tableBodyCell}
+            text={catalogState?.medicineDetails?.quantity}
+          />
           <TableCell align="left" className={classes.tableBodyCell}>
             {catalogState.saleStatus == "" && (
               <MSimpleSelectComponent
                 required={true}
                 id="medicineSellStatus"
                 name="medicineSellStatus"
-                label="Update Sale Status"
+                label="Update Status As"
                 selectedValue={catalogState.saleStatus}
                 disabled={catalogState.saleStatus == "0" ? true : false}
                 classname={classes.select}
@@ -516,72 +551,11 @@ const MedicineCatalogComponent = ({
                 variant="caption"
               />
             </div>
-            <div>
-              <div className={classes.textFieldBar}>
-                <MTextFieldComponent
-                  required={true}
-                  id="customerName"
-                  name="customerName"
-                  label="Buyer Name"
-                  variant="outlined"
-                  value={customerFormState.customerName}
-                  classname={classes.textField}
-                  changeHandler={handleInputChange}
-                />
-              </div>
-              <div className={classes.textFieldBar}>
-                <MTextFieldComponent
-                  required={true}
-                  id="customerAge"
-                  name="customerAge"
-                  label="Buyer Age (In Numbers)"
-                  type="number"
-                  variant="outlined"
-                  value={customerFormState.customerAge}
-                  classname={classes.textField}
-                  changeHandler={handleInputChange}
-                />
-              </div>
-              <div className={classes.textFieldBar}>
-                <MTextFieldComponent
-                  required={true}
-                  id="doctorName"
-                  name="doctorName"
-                  label="Doctor Name"
-                  variant="outlined"
-                  value={customerFormState.doctorName}
-                  classname={classes.textField}
-                  changeHandler={handleInputChange}
-                />
-              </div>
-              <div className={classes.textFieldBar}>
-                <MTextFieldComponent
-                  required={true}
-                  id="quantity"
-                  name="quantity"
-                  type="number"
-                  label="Quantity (In Numbers)"
-                  variant="outlined"
-                  disabled={true}
-                  value={customerFormState.quantity}
-                  classname={classes.textField}
-                  changeHandler={handleInputChange}
-                />
-              </div>
-              <div className={classes.textFieldBar}>
-                <MTextFieldComponent
-                  required={true}
-                  id="amountPaid"
-                  name="amountPaid"
-                  type="number"
-                  label="Amount Paid (In Rupees)"
-                  variant="outlined"
-                  value={customerFormState.amountPaid}
-                  classname={classes.textField}
-                  changeHandler={handleInputChange}
-                />
-              </div>
-            </div>
+            <CustomerFormComponent
+              classes={classes}
+              customerFormState={customerFormState}
+              handleInputChange={handleInputChange}
+            />
           </>
         </MFormDialogComponent>
       )}

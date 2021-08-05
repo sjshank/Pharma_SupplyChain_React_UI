@@ -6,6 +6,7 @@ export interface IUserInfo {
   userRoleName: string;
   userStatus?: string;
   isDeleted: boolean;
+  registrationDate: number | any;
 }
 
 export interface IUserInfoAction {

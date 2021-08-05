@@ -16,7 +16,7 @@ import DeleteOutlinedIcon from "@material-ui/icons/DeleteOutlined";
 import MButtonComponent from "../../generic/MButton";
 import PaperHeaderComponent from "../PaperHeader";
 import MTypographyComponent from "../../generic/MTypography";
-import { Chip, Fade, Slide } from "@material-ui/core";
+import { Chip } from "@material-ui/core";
 import { DELETE_CONFIRMATION_TEXT, ROLE_BRAND } from "../../utils/constants";
 import { IUserInfo, IUserInfoContext } from "../../models/userInfo.interface";
 import { IUserFields, useStyles } from "./helper";
@@ -26,14 +26,11 @@ import useTableHeaders from "../../hooks/useTableHeaders";
 import { DialogContext } from "../../context/DialogContext";
 import { IDialogContext } from "../../models/dialog.interface";
 import MTableHeadersComponent from "../../generic/TableHeaders";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import MTooltipComponent from "../../generic/MTooltip";
-
-const UserFormComponent = lazy(() => import("./UserForm"));
-const MFormDialogComponent = lazy(() => import("../../generic/MFormDialog"));
-const MConfirmationDialogComponent = lazy(
-  () => import("../../generic/MConfirmationDialog")
-);
+import UserFormComponent from "./UserForm";
+import MFormDialogComponent from "../../generic/MFormDialog";
+import MConfirmationDialogComponent from "../../generic/MConfirmationDialog";
+import MTableCellComponent from "../../generic/MTableCell";
 
 type RegisteredUsersProps = {
   IconComp: React.ReactNode;
@@ -94,7 +91,7 @@ const RegisteredUsersComponent = ({
       userRole: "",
       userStatus: true,
     });
-    updateDialogStatus(true, false, "Create User", false);
+    updateDialogStatus(true, false, "Create User", false, "createUser");
   };
 
   //open edit user dialog
@@ -108,7 +105,7 @@ const RegisteredUsersComponent = ({
         userRole: data.userRole,
         userStatus: data.userStatus === "Active",
       });
-      updateDialogStatus(true, false, "Edit User Details", true);
+      updateDialogStatus(true, false, "Edit User Details", true, "editUser");
     }
   };
 
@@ -148,15 +145,18 @@ const RegisteredUsersComponent = ({
               key={row.userAddress}
               className={row.isDeleted ? classes.inActiveStatusCell : ""}
             >
-              <TableCell align="left" className={classes.tableBodyCell}>
-                {row.userAddress}
-              </TableCell>
-              <TableCell align="left" className={classes.tableBodyCell}>
-                {row.userName}
-              </TableCell>
-              <TableCell align="left" className={classes.tableBodyCell}>
-                {row.userLocation}
-              </TableCell>
+              <MTableCellComponent
+                classname={classes.tableBodyCell}
+                text={row.userAddress}
+              />
+              <MTableCellComponent
+                classname={classes.tableBodyCell}
+                text={row.userName}
+              />
+              <MTableCellComponent
+                classname={classes.tableBodyCell}
+                text={row.userLocation}
+              />
               <TableCell align="left" className={classes.tableBodyCell}>
                 <Chip
                   className={classes.roleChip}
@@ -284,32 +284,21 @@ const RegisteredUsersComponent = ({
         height="305px"
         stickyHeader={true}
       />
-      <MFormDialogComponent
-        title={dialogStatus.dialogTitle}
-        open={dialogStatus.openFormDialog}
-        dialogId="userFormDialog"
-        footerButtons={populateFormDialogFooter()}
-      >
-        <Suspense
-          fallback={
-            <div
-              style={{
-                textAlign: "center",
-                justifyContent: "center",
-                width: "100%",
-              }}
-            >
-              <CircularProgress variant="indeterminate" />
-            </div>
-          }
+      {(dialogStatus.dialogId == "createUser" ||
+        dialogStatus.dialogId == "editUser") && (
+        <MFormDialogComponent
+          title={dialogStatus.dialogTitle}
+          open={dialogStatus.openFormDialog}
+          dialogId="userFormDialog"
+          footerButtons={populateFormDialogFooter()}
         >
           <UserFormComponent
             handleInputChange={handleInputChange}
             userState={userFormState}
             isEditMode={dialogStatus.isEditMode}
           />
-        </Suspense>
-      </MFormDialogComponent>
+        </MFormDialogComponent>
+      )}
 
       <MConfirmationDialogComponent
         title={dialogStatus.dialogTitle}

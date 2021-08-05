@@ -2,20 +2,15 @@ import React, { useEffect, useReducer, useState } from "react";
 import Web3Config from "../../config/web3Config";
 import { IWeb3State } from "../../models/web3.interface";
 import SupplyChainContract from "../../contracts/SupplyChain.json";
-import UserContract from "../../contracts/User.json";
-import SupplierContract from "../../contracts/Supplier.json";
-import ManufacturerContract from "../../contracts/Manufacturer.json";
-import DistributorContract from "../../contracts/Distributor.json";
-import PharmaContract from "../../contracts/Pharma.json";
 import { reducer } from "./reducer";
+
+declare const window: Window &
+  typeof globalThis & {
+    WEB3: any;
+  };
 
 const Web3_Initial_State: IWeb3State = {
   contractInstance: undefined,
-  userContractInstance: undefined,
-  supplierContractInstance: undefined,
-  manufacturerContractInstance: undefined,
-  distributorContractInstance: undefined,
-  pharmaContractInstance: undefined,
   accounts: [],
   selectedAccount: "",
   networkId: "",
@@ -67,69 +62,64 @@ const Web3ContextProvider = (props: any) => {
         supplychainInstance._address
       );
 
-      /****** USER CONTRACT***** */
+      // /****** USER CONTRACT***** */
 
-      //get deployed network based on network id for required contract
-      const userDeployedNetwork = UserContract.networks[_networkId];
-      //generate contract instance based on contract address, abi, and web2 from deployed network
-      const userInstance = new web3.eth.Contract(
-        UserContract.abi,
-        userDeployedNetwork && userDeployedNetwork.address
-      );
-      // const _contractStorageAddress = await web3.eth.getStorageAt(
-      //   userInstance._address
+      // //get deployed network based on network id for required contract
+      // const userDeployedNetwork = UserContract.networks[_networkId];
+      // //generate contract instance based on contract address, abi, and web2 from deployed network
+      // const userInstance = new web3.eth.Contract(
+      //   UserContract.abi,
+      //   userDeployedNetwork && userDeployedNetwork.address
+      // );
+      // // const _contractStorageAddress = await web3.eth.getStorageAt(
+      // //   userInstance._address
+      // // );
+
+      // /****** SUPPLIER CONTRACT***** */
+
+      // //get deployed network based on network id for required contract
+      // const supplierDeployedNetwork = SupplierContract.networks[_networkId];
+      // //generate contract instance based on contract address, abi, and web2 from deployed network
+      // const supplierInstance = new web3.eth.Contract(
+      //   SupplierContract.abi,
+      //   supplierDeployedNetwork && supplierDeployedNetwork.address
       // );
 
-      /****** SUPPLIER CONTRACT***** */
+      // /****** MANU CONTRACT***** */
 
-      //get deployed network based on network id for required contract
-      const supplierDeployedNetwork = SupplierContract.networks[_networkId];
-      //generate contract instance based on contract address, abi, and web2 from deployed network
-      const supplierInstance = new web3.eth.Contract(
-        SupplierContract.abi,
-        supplierDeployedNetwork && supplierDeployedNetwork.address
-      );
+      // //get deployed network based on network id for required contract
+      // const manuDeployedNetwork = ManufacturerContract.networks[_networkId];
+      // //generate contract instance based on contract address, abi, and web2 from deployed network
+      // const manufacturerInstance = new web3.eth.Contract(
+      //   ManufacturerContract.abi,
+      //   manuDeployedNetwork && manuDeployedNetwork.address
+      // );
 
-      /****** MANU CONTRACT***** */
+      // /****** DIST CONTRACT***** */
 
-      //get deployed network based on network id for required contract
-      const manuDeployedNetwork = ManufacturerContract.networks[_networkId];
-      //generate contract instance based on contract address, abi, and web2 from deployed network
-      const manufacturerInstance = new web3.eth.Contract(
-        ManufacturerContract.abi,
-        manuDeployedNetwork && manuDeployedNetwork.address
-      );
+      // //get deployed network based on network id for required contract
+      // const distributorDeployedNetwork =
+      //   DistributorContract.networks[_networkId];
+      // //generate contract instance based on contract address, abi, and web2 from deployed network
+      // const distributorInstance = new web3.eth.Contract(
+      //   DistributorContract.abi,
+      //   distributorDeployedNetwork && distributorDeployedNetwork.address
+      // );
 
-      /****** DIST CONTRACT***** */
+      // /****** PHARMA CONTRACT***** */
 
-      //get deployed network based on network id for required contract
-      const distributorDeployedNetwork =
-        DistributorContract.networks[_networkId];
-      //generate contract instance based on contract address, abi, and web2 from deployed network
-      const distributorInstance = new web3.eth.Contract(
-        DistributorContract.abi,
-        distributorDeployedNetwork && distributorDeployedNetwork.address
-      );
-
-      /****** PHARMA CONTRACT***** */
-
-      //get deployed network based on network id for required contract
-      const pharmaDeployedNetwork = PharmaContract.networks[_networkId];
-      //generate contract instance based on contract address, abi, and web2 from deployed network
-      const pharmaInstance = new web3.eth.Contract(
-        PharmaContract.abi,
-        pharmaDeployedNetwork && pharmaDeployedNetwork.address
-      );
+      // //get deployed network based on network id for required contract
+      // const pharmaDeployedNetwork = PharmaContract.networks[_networkId];
+      // //generate contract instance based on contract address, abi, and web2 from deployed network
+      // const pharmaInstance = new web3.eth.Contract(
+      //   PharmaContract.abi,
+      //   pharmaDeployedNetwork && pharmaDeployedNetwork.address
+      // );
 
       //Populate state object
 
       await setWeb3State({
         contractInstance: supplychainInstance,
-        userContractInstance: userInstance,
-        supplierContractInstance: supplierInstance,
-        manufacturerContractInstance: manufacturerInstance,
-        distributorContractInstance: distributorInstance,
-        pharmaContractInstance: pharmaInstance,
         accounts: _accounts,
         selectedAccount: web3.currentProvider.selectedAddress,
         networkId: _networkId,

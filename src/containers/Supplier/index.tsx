@@ -1,5 +1,5 @@
 import { createStyles, Grid, makeStyles, Theme } from "@material-ui/core";
-import React, { ReactNode, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { SpinnerContext } from "../../context/SpinnerContext";
 import { ISpinnerState } from "../../models/spinner.interface";
 import { Web3Context } from "../../context/Web3Context";
@@ -23,8 +23,6 @@ import ContactsOutlinedIcon from "@material-ui/icons/ContactsOutlined";
 import RegisteredRawMaterialsComponent from "../../components/RegisteredRawMaterials";
 import { IRawMaterial } from "../../models/material.interface";
 import LocalShippingIcon from "@material-ui/icons/LocalShipping";
-import ManufacturerListComponent from "../../components/ManufacturerList";
-import TransporterListComponent from "../../components/TransporterList";
 import { populateRoleBasedList } from "../../utils/helpers";
 import useRegisteredUsers from "../../hooks/useRegisteredUsers";
 import AddressBarComponent from "../../components/AddressBar";
@@ -128,7 +126,7 @@ const SupplierDashboardComponent = () => {
           .then((addresses: any) => {
             let _listOfMaterials: Array<IRawMaterial> = [];
             let _batchesShippedCount = 0;
-            addresses.forEach(async (addr: any) => {
+            addresses.forEach((addr: any) => {
               loadRegisteredRawMaterial(contractInstance, selectedAccount, addr)
                 .then((record: any) => {
                   _listOfMaterials.push(record);
@@ -180,6 +178,7 @@ const SupplierDashboardComponent = () => {
   const registerNewMaterial = (rawMaterialObj: IRawMaterial) => {
     try {
       toggleSpinner();
+      //register raw material
       const res: Promise<any> = sendTransaction(
         contractInstance,
         "createRawMaterialPackage",
@@ -200,6 +199,7 @@ const SupplierDashboardComponent = () => {
           ) {
             const RawMaterialInitializeEvt =
               _result.events["RawMaterialInitialize"];
+            //get raw material
             loadRegisteredRawMaterial(
               contractInstance,
               selectedAccount,
@@ -230,6 +230,7 @@ const SupplierDashboardComponent = () => {
   const editRawMaterial = (rawMaterialObj: IRawMaterial) => {
     try {
       toggleSpinner();
+      //update raw material
       const res: Promise<any> = sendTransaction(
         contractInstance,
         "updateRawMaterial",
@@ -244,6 +245,7 @@ const SupplierDashboardComponent = () => {
       );
       res
         .then((_result: any) => {
+          //get raw material
           loadRegisteredRawMaterial(
             contractInstance,
             selectedAccount,
@@ -286,6 +288,7 @@ const SupplierDashboardComponent = () => {
   const transportRawMaterial = (rawMaterialObj: IRawMaterial) => {
     try {
       toggleSpinner();
+      //Initiate raw material shipment
       const _result = sendTransaction(
         contractInstance,
         "loadAndShipRawMaterialBatch",
@@ -295,6 +298,7 @@ const SupplierDashboardComponent = () => {
       );
       _result
         .then((res: any) => {
+          //get raw material
           loadRegisteredRawMaterial(
             contractInstance,
             selectedAccount,

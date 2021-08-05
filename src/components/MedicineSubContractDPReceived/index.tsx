@@ -23,6 +23,7 @@ import {
   MEDICINE_SUB_CONTRACT_RCVD,
   MEDICINE_SUB_CONTRACT_SHIPPMENT_STATUS_LIST_AT_PHARMA,
   NO_RECORDS_FOUND,
+  TRACK_UPDATES,
   VERIFY_UPDATE_HELP_TEXT_AT_PHARMA,
 } from "../../utils/constants";
 import MButtonComponent from "../../generic/MButton";
@@ -31,7 +32,9 @@ import MedicineDetailsExplorerComponent from "../MedicineDetailsExplorer";
 import MSimpleSelectComponent from "../../generic/MBasicSelect";
 import { IDialogContext } from "../../models/dialog.interface";
 import { DialogContext } from "../../context/DialogContext";
-import { populateUserName } from "../../utils/helpers";
+import { getMedicineURL, populateUserName } from "../../utils/helpers";
+import MedicineTrackerComponent from "../MedicineTracker";
+import MedicineQrCodeModalComponent from "../MedicineQrCodeModal";
 
 type SubContractProps = {
   medicineBatchesReceivedDP: IMedicineDP[];
@@ -156,6 +159,15 @@ const useStyles = makeStyles((theme: Theme) =>
       width: "100%",
       maxWidth: "100%",
     },
+    viewUpdatesItem: {
+      paddingTop: "1.5rem",
+      paddingLeft: "0.25rem",
+      width: "11%",
+      paddingRight: "0.25rem",
+      color: "#444",
+      maxWidth: "20%",
+      backgroundClip: "padding-box",
+    },
     tileArticle: {
       position: "relative",
       display: "block",
@@ -235,6 +247,16 @@ const MedicineSubContractDPReceivedComponent = ({
 
   const closeDialog: MouseEventHandler = () => {
     updateDialogStatus(false, false);
+  };
+
+  const handleQRCodeEvent: any = (medicineDetail: any) => {
+    updateDialogStatus(
+      true,
+      false,
+      TRACK_UPDATES,
+      false,
+      medicineDetail.medicineId
+    );
   };
 
   const populateSubContractContent = (): ReactNode => {
@@ -358,6 +380,7 @@ const MedicineSubContractDPReceivedComponent = ({
                                 <MTypographyComponent
                                   variant="button"
                                   text="Verify & Update"
+                                  style={{ fontSize: "13px" }}
                                 />
                               </span>
                             </MTooltipComponent>
@@ -367,6 +390,27 @@ const MedicineSubContractDPReceivedComponent = ({
                     </article>
                   </li>
                 )}
+
+                <li className={classes.viewUpdatesItem}>
+                  <article className={classes.tileArticle}>
+                    <ul style={{ display: "flex", listStyle: "none" }}>
+                      <li style={{ margin: 5 }}>
+                        <MedicineTrackerComponent data={row} />
+                      </li>
+                      <li style={{ margin: 5 }}>
+                        <MedicineQrCodeModalComponent
+                          data={getMedicineURL(row.medicineId)}
+                          mouseOverEvent={() => handleQRCodeEvent(row)}
+                          dialogTitle={dialogStatus.dialogTitle}
+                          dialogId={dialogStatus.dialogId}
+                          uui={row.medicineId}
+                          isOpen={dialogStatus.openFormDialog}
+                          closeDialog={closeDialog}
+                        />
+                      </li>
+                    </ul>
+                  </article>
+                </li>
               </ul>
               <MedicineDetailsExplorerComponent
                 medicineId={row.medicineId}

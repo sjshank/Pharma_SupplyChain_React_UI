@@ -5,7 +5,6 @@ import ManufacturerListComponent from "../ManufacturerList";
 import PharmaListComponent from "../PharmaList";
 import SupplierListComponent from "../SupplierList";
 import TransporterListComponent from "../TransporterList";
-import { IUserInfo } from "../../models/userInfo.interface";
 
 type UserBarProps = {
   roles: string[];
@@ -41,7 +40,6 @@ const RegisteredUsersBarComponent = ({ roles, users }: UserBarProps) => {
       {roles.map((role: string) => {
         const COMP = COMPONENT_MAP[role]?.cName;
         const list = users[COMPONENT_MAP[role]?.pname];
-        console.log(COMP(list));
         return (
           <Grid item xs={12} sm={12} lg={6} key={role}>
             <COMP list={list} />
