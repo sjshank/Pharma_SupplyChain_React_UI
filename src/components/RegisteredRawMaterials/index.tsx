@@ -34,6 +34,7 @@ import MTableHeadersComponent from "../../generic/TableHeaders";
 import { DialogContext } from "../../context/DialogContext";
 import { IDialogContext } from "../../models/dialog.interface";
 import { populateUserName } from "../../utils/helpers";
+import MTableCellComponent from "../../generic/MTableCell";
 
 type RegRawMaterialProps = {
   IconComp?: React.ReactNode;
@@ -234,22 +235,22 @@ const RegisteredRawMaterialsComponent = ({
         )}
         {RawMaterials.map((row: IRawMaterial) => (
           <TableRow key={row.materialId}>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              <MTooltipComponent title={row.producerName} placement="top">
-                <span>{row.producerName}</span>
-              </MTooltipComponent>
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              <MTooltipComponent title={row.description} placement="top">
-                <span>{row.description}</span>
-              </MTooltipComponent>
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.location}
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.quantity}
-            </TableCell>
+            <MTableCellComponent
+              classname={classes.tableBodyCell}
+              text={row.producerName}
+            />
+            <MTableCellComponent
+              classname={classes.tableBodyCell}
+              text={row.description}
+            />
+            <MTableCellComponent
+              classname={classes.tableBodyCell}
+              text={row.location}
+            />
+            <MTableCellComponent
+              classname={classes.tableBodyCell}
+              text={row.quantity}
+            />
             <TableCell align="left" className={classes.tableBodyCell}>
               <MTooltipComponent title={row.manufacturer} placement="top">
                 <span style={{ color: "#FA163F", fontWeight: 600 }}>

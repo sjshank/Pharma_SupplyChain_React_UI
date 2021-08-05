@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { createStyles, Grid, makeStyles, Theme } from "@material-ui/core";
 import { SpinnerContext } from "../../context/SpinnerContext";
 import { ISpinnerState } from "../../models/spinner.interface";
@@ -29,7 +29,12 @@ import {
 import MedicinesManufacturedComponent from "../../components/MedicinesManufactured";
 import RawMaterialsReceivedComponent from "../../components/RawMaterialsReceived";
 import { IMedicine } from "../../models/medicine.interface";
-import { populateRoleBasedList } from "../../utils/helpers";
+import {
+  populateRoleBasedList,
+  populateTxBlockDetails,
+  populateUserDetailsinMaterialRecord,
+  populateUserDetailsinMedicineRecord,
+} from "../../utils/helpers";
 import useRegisteredUsers from "../../hooks/useRegisteredUsers";
 import { IManufacturerContext } from "../../models/manufacturer.interface";
 import { ManufacturerContext } from "../../context/ManufacturerContext";
@@ -47,6 +52,7 @@ import SummaryBarComponent from "../../components/SummaryBar";
 import { IAddressBar } from "../../models/addressbar.interface";
 import AddressBarComponent from "../../components/AddressBar";
 import RegisteredUsersBarComponent from "../../components/RegisteredUsersBar";
+import { allTransactionRef } from "../../config/firebaseConfig";
 
 type ManufacturerDashboardProps = {};
 
@@ -99,8 +105,7 @@ const ManufacturerDashboardComponent = () => {
   const { userInfo } = userInfoContext;
 
   const web3Context = useContext<IWeb3State>(Web3Context);
-  const { contractInstance, selectedAccount } =
-    web3Context;
+  const { contractInstance, selectedAccount } = web3Context;
 
   const spinnerContext = useContext<ISpinnerState>(SpinnerContext);
   const { toggleSpinner } = spinnerContext;
@@ -269,6 +274,7 @@ const ManufacturerDashboardComponent = () => {
     );
     result
       .then(async (response: any) => {
+        let _updatedMaterialRecord: any = {};
         const _listOfRecvdMaterials: Array<IRawMaterial> = [
           ...rawMaterialsReceived,
         ];
@@ -280,6 +286,7 @@ const ManufacturerDashboardComponent = () => {
           medicineBatchObj.materialId
         )
           .then((_record: any) => {
+            _updatedMaterialRecord = { ..._record };
             _updatedList = _listOfRecvdMaterials.map((mat: IRawMaterial) => {
               if (
                 mat.materialId == _record.materialId &&
@@ -308,17 +315,39 @@ const ManufacturerDashboardComponent = () => {
         )
           .then((_record: any) => {
             _listOfMedicineManu.push(_record as IMedicine);
+
+            //get all transaction details for medicine
+            populateTxBlockDetails(
+              populateUserDetailsinMedicineRecord(_record, userList.users)
+            )?.then((medicineTxData: any) => {
+              //get all transaction details for material
+              populateTxBlockDetails(
+                populateUserDetailsinMaterialRecord(
+                  _updatedMaterialRecord,
+                  userList.users
+                )
+              )?.then((materialTxData: any) => {
+                //store data in firebase
+                const medicineRef = allTransactionRef.child(
+                  _medicineBatchEvt?.returnValues?.MedicineID
+                );
+                medicineRef.set({
+                  medicineInfo: { ...medicineTxData },
+                  materialInfo: { ...materialTxData },
+                });
+                storeManufacturerDashboardData(
+                  _listOfMedicineManu.length,
+                  medicineShippedCount,
+                  [..._updatedList],
+                  [..._listOfMedicineManu]
+                );
+                toggleToast("success", MEDICINE_BATCH_REGISTERED);
+              });
+            });
           })
           .catch((e: any) => {
             toggleToast("error", e?.errorMessage);
           });
-        storeManufacturerDashboardData(
-          _listOfMedicineManu.length,
-          medicineShippedCount,
-          [..._updatedList],
-          [..._listOfMedicineManu]
-        );
-        toggleToast("success", MEDICINE_BATCH_REGISTERED);
       })
       .catch((e: any) => {
         toggleToast("error", e?.errorMessage);
@@ -349,21 +378,52 @@ const ManufacturerDashboardComponent = () => {
           selectedAccount,
           medicineBatchObj.medicineId
         )
-          .then((_record: any) => {
+          .then(async (medData: any) => {
             const _updatedList = _medicineList.map((medicine: IMedicine) => {
-              if (medicine.medicineId == _record.medicineId) {
-                return _record;
+              if (medicine.medicineId == medData.medicineId) {
+                return medData;
               } else {
                 return medicine;
               }
             });
-            storeManufacturerDashboardData(
-              medicineBatchCount,
-              medicineShippedCount + 1,
-              rawMaterialsReceived,
-              [..._updatedList]
-            );
-            toggleToast("success", MEDICINE_BATCH_SHIPMENT);
+
+            //reload updated material details
+            await loadRegisteredRawMaterial(
+              contractInstance,
+              selectedAccount,
+              medData.materialId
+            )
+              .then((matData: any) => {
+                //get all transaction details for medicine
+                populateTxBlockDetails(
+                  populateUserDetailsinMedicineRecord(medData, userList.users)
+                )?.then((medicineTxData: any) => {
+                  //get all transaction details for material
+                  populateTxBlockDetails(
+                    populateUserDetailsinMaterialRecord(matData, userList.users)
+                  )?.then((materialTxData: any) => {
+                    //store data in firebase
+                    const medicineRef = allTransactionRef.child(
+                      medData.medicineId
+                    );
+                    medicineRef.update({
+                      medicineInfo: { ...medicineTxData },
+                      materialInfo: { ...materialTxData },
+                    });
+
+                    storeManufacturerDashboardData(
+                      medicineBatchCount,
+                      medicineShippedCount + 1,
+                      rawMaterialsReceived,
+                      [..._updatedList]
+                    );
+                    toggleToast("success", MEDICINE_BATCH_SHIPMENT);
+                  });
+                });
+              })
+              .catch((e: any) => {
+                toggleToast("error", e?.errorMessage);
+              });
           })
           .catch((e: any) => {
             toggleToast("error", e?.errorMessage);

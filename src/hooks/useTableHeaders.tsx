@@ -43,11 +43,11 @@ const registeredUsersTableHeader: Array<ITableHeader> = [
 
 const registeredRawMaterialsTable: Array<ITableHeader> = [
   {
-    name: "Producer Name",
+    name: "Material Name",
     id: "producerName",
   },
   {
-    name: "Material Description",
+    name: "Description",
     id: "description",
   },
   {
@@ -67,7 +67,7 @@ const registeredRawMaterialsTable: Array<ITableHeader> = [
     id: "shipper",
   },
   {
-    name: "Shipment Status",
+    name: "Status",
     id: "packageStatus",
   },
   {
@@ -86,7 +86,7 @@ const rawMaterialsReceivedTable: Array<ITableHeader> = [
   //   id: "description",
   // },
   {
-    name: "Coming From",
+    name: "Location",
     id: "location",
   },
   {
@@ -102,7 +102,7 @@ const rawMaterialsReceivedTable: Array<ITableHeader> = [
     id: "shipper",
   },
   {
-    name: "Shipment Status",
+    name: "Status",
     id: "packageStatus",
   },
   {
@@ -116,10 +116,10 @@ const medicinesManufacturedTable: Array<ITableHeader> = [
     name: "Medicine Name",
     id: "medicineName",
   },
-  {
-    name: "Medicine Description",
-    id: "description",
-  },
+  // {
+  //   name: "Description",
+  //   id: "description",
+  // },
   {
     name: "Location",
     id: "location",
@@ -137,7 +137,7 @@ const medicinesManufacturedTable: Array<ITableHeader> = [
     id: "shipper",
   },
   {
-    name: "Shipment Status",
+    name: "Status",
     id: "packageStatus",
   },
   {
@@ -151,10 +151,10 @@ const medicineBatchesReceivedTable: Array<ITableHeader> = [
     name: "Medicine Name",
     id: "medicineName",
   },
-  {
-    name: "Medicine Description",
-    id: "description",
-  },
+  // {
+  //   name: "Description",
+  //   id: "description",
+  // },
   {
     name: "Location",
     id: "location",
@@ -172,7 +172,7 @@ const medicineBatchesReceivedTable: Array<ITableHeader> = [
     id: "shipper",
   },
   {
-    name: "Shipment Status",
+    name: "Status",
     id: "packageStatus",
   },
   {
@@ -195,7 +195,7 @@ const medicineSubContractsReceivedTable: Array<ITableHeader> = [
     id: "shipper",
   },
   {
-    name: "Shipment Status",
+    name: "Status",
     id: "packageStatus",
   },
   {
@@ -210,15 +210,15 @@ const medicineDetailsTable: Array<ITableHeader> = [
     id: "medicineName",
   },
   {
-    name: "Medicine Description",
+    name: "Description",
     id: "description",
   },
   {
-    name: "Coming From",
+    name: "Location",
     id: "location",
   },
   {
-    name: "Quantity",
+    name: "Qty",
     id: "quantity",
   },
   // {
@@ -233,7 +233,7 @@ const medicineDetailsTable: Array<ITableHeader> = [
 
 const customerListTable: Array<ITableHeader> = [
   {
-    name: "Customer Name",
+    name: "Buyer",
     id: "customerName",
   },
   {
@@ -241,16 +241,20 @@ const customerListTable: Array<ITableHeader> = [
     id: "customerAge",
   },
   {
-    name: "Doctor Name",
+    name: "Doctor",
     id: "doctorName",
   },
   {
-    name: "Quantity",
+    name: "Qty",
     id: "quantity",
   },
   {
     name: "Amount Paid",
     id: "amountPaid",
+  },
+  {
+    name: "Updates",
+    id: "viewUpdates",
   },
 ];
 
@@ -279,7 +283,7 @@ const batchInfoRawMaterialTable: Array<ITableHeader> = [
     id: "producerName",
   },
   {
-    name: "Coming From",
+    name: "Location",
     id: "location",
   },
   {
@@ -310,7 +314,7 @@ const batchInfoMedicineDetailsTable: Array<ITableHeader> = [
     id: "medicineName",
   },
   {
-    name: "Coming From",
+    name: "Location",
     id: "location",
   },
   {

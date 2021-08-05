@@ -20,7 +20,10 @@ const AppFooterComponent = ({ footerText }: AppFooterProps) => {
   const classes = useStyles();
   return (
     <footer className={classes.root}>
-      <small>{footerText}</small>
+      <small>
+        {footerText}
+        <a href="https://sjshank.com" target="_blank">Saurabh Shankariya</a>
+      </small>
     </footer>
   );
 };

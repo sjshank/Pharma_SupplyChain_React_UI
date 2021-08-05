@@ -1,7 +1,6 @@
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import React, { lazy, Suspense } from "react";
 import RouteItem from "../models/route.interface";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import { Helmet } from "react-helmet";
 import {
   PHARMA_SUPPLY_CHAIN,
@@ -18,6 +17,7 @@ import { SupplierContextProvider } from "../context/SupplierContext";
 import { ManufacturerContextProvider } from "../context/ManufacturerContext";
 import { DistributorContextProvider } from "../context/DistributorContext";
 import { PharmaContextProvider } from "../context/PharmaContext";
+import LoaderComponent from "../generic/Loader";
 
 // Lazy loading
 
@@ -81,19 +81,7 @@ const AppRoute = () => {
   return (
     <BrowserRouter>
       <Switch>
-        <Suspense
-          fallback={
-            <div
-              style={{
-                textAlign: "center",
-                justifyContent: "center",
-                width: "100%",
-              }}
-            >
-              <CircularProgress variant="indeterminate" />
-            </div>
-          }
-        >
+        <Suspense fallback={<LoaderComponent />}>
           <Spinner />
           <DialogContextProvider>
             <AdminContextProvider>

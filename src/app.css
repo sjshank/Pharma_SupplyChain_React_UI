@@ -10,4 +10,6 @@ body {
   /* background-color: #402218; */
 }
 
-
+body ul {
+  list-style: none;
+}

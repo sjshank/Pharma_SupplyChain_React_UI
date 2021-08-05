@@ -23,7 +23,6 @@ export const setWeb3Context = (state: IWeb3State, action: any) => {
     _contextObject.accounts = await _contextObject.web3.eth.getAccounts();
     //get the network id of running blockchain
     _contextObject.networkId = await _contextObject.web3.eth.net.getId();
-    debugger;
     //get deployed network based on network id for required contract
     const _deployedNetwork = SupplyChain.networks[_contextObject.networkId];
     //generate contract instance based on contract address, abi, and web2 from deployed network

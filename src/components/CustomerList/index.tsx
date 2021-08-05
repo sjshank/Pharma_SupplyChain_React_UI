@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { MouseEventHandler, useContext } from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import PaperHeaderComponent from "../../components/PaperHeader";
 import AssignmentTurnedInOutlinedIcon from "@material-ui/icons/AssignmentTurnedInOutlined";
@@ -15,10 +15,16 @@ import MTableHeadersComponent from "../../generic/TableHeaders";
 import {
   MEDICINE_SOLD_TO_CUSTOMER,
   NO_RECORDS_FOUND,
+  TRACK_UPDATES,
 } from "../../utils/constants";
 import { PharmaContext } from "../../context/PharmaContext";
 import { IPharmaContext } from "../../models/pharma.interface";
 import MTypographyComponent from "../../generic/MTypography";
+import MedicineTrackerComponent from "../MedicineTracker";
+import MedicineQrCodeModalComponent from "../MedicineQrCodeModal";
+import { getMedicineURL } from "../../utils/helpers";
+import { DialogContext } from "../../context/DialogContext";
+import { IDialogContext } from "../../models/dialog.interface";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -59,11 +65,27 @@ const CustomerListComponent = () => {
   const classes = useStyles();
   const tableHeaders = useTableHeaders("customers");
 
+  const dialogContext = useContext<IDialogContext>(DialogContext);
+  const { dialogStatus, updateDialogStatus } = dialogContext;
+
   const pharmaContext = useContext<IPharmaContext>(PharmaContext);
   const { customers } = pharmaContext;
 
+  const closeDialog: MouseEventHandler = () => {
+    updateDialogStatus(false, false);
+  };
+
+  const handleQRCodeEvent: any = (medicineDetail: any) => {
+    updateDialogStatus(
+      true,
+      false,
+      TRACK_UPDATES,
+      false,
+      medicineDetail.medicineId
+    );
+  };
+
   const populateTableBody = () => {
-    console.log(customers);
     return (
       <TableBody>
         {customers.length === 0 && (
@@ -99,6 +121,31 @@ const CustomerListComponent = () => {
                 prefix={"₹ "}
               />
             </TableCell>
+            <TableCell align="left" className={classes.tableBodyCell}>
+              <ul
+                style={{
+                  display: "flex",
+                  listStyle: "none",
+                  margin: 0,
+                  padding: 0,
+                }}
+              >
+                <li style={{ margin: 5 }}>
+                  <MedicineTrackerComponent data={row} />
+                </li>
+                <li style={{ margin: 5 }}>
+                  <MedicineQrCodeModalComponent
+                    data={getMedicineURL(row.medicineId)}
+                    clickEvent={() => handleQRCodeEvent(row)}
+                    dialogTitle={dialogStatus.dialogTitle}
+                    dialogId={dialogStatus.dialogId}
+                    uui={row.medicineId}
+                    isOpen={dialogStatus.openFormDialog}
+                    closeDialog={closeDialog}
+                  />
+                </li>
+              </ul>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -129,11 +176,11 @@ const CustomerListComponent = () => {
         }
         tableName="Customer List"
         tableId="customerListTbl"
-        height="120px"
+        // height="120px"
         stickyHeader={true}
       />
     </Paper>
   );
 };
 
-export default CustomerListComponent;
+export default React.memo(CustomerListComponent);

@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { createStyles, Grid, makeStyles, Theme } from "@material-ui/core";
 import DashboardLayout from "../../layout/DashboardPage";
 import {
@@ -22,7 +22,13 @@ import ContactsOutlinedIcon from "@material-ui/icons/ContactsOutlined";
 import LocalShippingIcon from "@material-ui/icons/LocalShipping";
 import MedicineReceivedFromManufacturerComponent from "../../components/MedicineReceivedMD";
 import { IMedicineDP } from "../../models/medicineDP.interface";
-import { populateRoleBasedList } from "../../utils/helpers";
+import {
+  populateRoleBasedList,
+  populateTxBlockDetails,
+  populateUserDetails,
+  populateUserDetailsinMedicineRecord,
+  populateUserName,
+} from "../../utils/helpers";
 import useRegisteredUsers from "../../hooks/useRegisteredUsers";
 import { IDistributorContext } from "../../models/distributor.interface";
 import { DistributorContext } from "../../context/DistributorContext";
@@ -39,6 +45,7 @@ import { ToastContext } from "../../context/ToastContext";
 import { DialogContext } from "../../context/DialogContext";
 import { IDialogContext } from "../../models/dialog.interface";
 import RegisteredUsersBarComponent from "../../components/RegisteredUsersBar";
+import { allTransactionRef } from "../../config/firebaseConfig";
 
 type DistributorDashboardProps = {};
 
@@ -200,11 +207,11 @@ const DistributorDashboardComponent = () => {
     }
   }, [contractInstance]);
 
-  //transfer requested medicine batch to pharma shop
   const transferMedicineBatchToPharma = (
     medicineSubContractBatchObj: IMedicineDP
   ): void => {
     toggleSpinner();
+    //transfer requested medicine batch to pharma shop
     const result: Promise<any> = sendTransaction(
       contractInstance,
       "transferMedicineFromDistributorToPharma",
@@ -214,7 +221,7 @@ const DistributorDashboardComponent = () => {
       medicineSubContractBatchObj.shipper
     );
     result
-      .then((res: any) => {
+      .then(async (res: any) => {
         const _listOfMedicinesTransferred: IMedicineDP[] = [
           ...medicineBatchesTransferredToPharma,
         ];
@@ -239,12 +246,39 @@ const DistributorDashboardComponent = () => {
             }
           }
         );
-        storeDistributorDashboardData(
-          batchesShippedCount + 1,
-          [..._updatedList],
-          [..._listOfMedicinesTransferred]
-        );
-        toggleToast("success", MEDICINE_BATCH_SHIPMENT);
+        //get medicine details
+        await loadMedicineDetails(
+          contractInstance,
+          selectedAccount,
+          medicineSubContractBatchObj.medicineId
+        )
+          .then((medData: any) => {
+            //get all transaction details for medicine
+            populateTxBlockDetails(
+              populateUserDetailsinMedicineRecord(medData, userList.users)
+            )?.then((medicineTxData: any) => {
+              const _updatedData = { ...medicineTxData };
+              _updatedData.pharmaDetails = populateUserDetails(
+                "6",
+                medicineSubContractBatchObj.pharma,
+                userList.users
+              );
+              //store data in firebase
+              const medicineRef = allTransactionRef.child(medData.medicineId);
+              medicineRef.update({
+                medicineInfo: { ..._updatedData },
+              });
+              storeDistributorDashboardData(
+                batchesShippedCount + 1,
+                [..._updatedList],
+                [..._listOfMedicinesTransferred]
+              );
+              toggleToast("success", MEDICINE_BATCH_SHIPMENT);
+            });
+          })
+          .catch((e: any) => {
+            toggleToast("error", e?.errorMessage);
+          });
       })
       .catch((e: any) => {
         toggleToast("error", e?.errorMessage);

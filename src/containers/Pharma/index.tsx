@@ -26,7 +26,12 @@ import { IMedicineDP } from "../../models/medicineDP.interface";
 import MedicineSubContractDPReceivedComponent from "../../components/MedicineSubContractDPReceived";
 import MedicineCatalogComponent from "../MedicineCatalog";
 import ThumbUpOutlinedIcon from "@material-ui/icons/ThumbUpOutlined";
-import { populateRoleBasedList } from "../../utils/helpers";
+import {
+  populateRoleBasedList,
+  populateTxBlockDetails,
+  populateUserDetails,
+  populateUserDetailsinMedicineRecord,
+} from "../../utils/helpers";
 import useRegisteredUsers from "../../hooks/useRegisteredUsers";
 import { IAddressBar } from "../../models/addressbar.interface";
 import AddressBarComponent from "../../components/AddressBar";
@@ -42,6 +47,9 @@ import { ISummaryBar } from "../../models/summarybar.interface";
 import SummaryBarComponent from "../../components/SummaryBar";
 import { IDialogContext } from "../../models/dialog.interface";
 import { DialogContext } from "../../context/DialogContext";
+import useRegisteredRawMaterial from "../../hooks/useRegisteredRawMaterial";
+import useMedicineBatchDetails from "../../hooks/useMedicineBatchDetails";
+import { allTransactionRef } from "../../config/firebaseConfig";
 
 type PharmaDashboardProps = {};
 
@@ -87,6 +95,7 @@ export const useStyles = makeStyles((theme: Theme) =>
 const PharmaDashboardComponent = () => {
   const classes = useStyles();
   const loadUsers = useRegisteredUsers();
+  const loadMedicineDetails = useMedicineBatchDetails();
 
   const web3Context = useContext<IWeb3State>(Web3Context);
   const { contractInstance, selectedAccount } = web3Context;
@@ -121,6 +130,7 @@ const PharmaDashboardComponent = () => {
     try {
       if (contractInstance && medicineBatchesReceivedFromDist.length === 0) {
         toggleSpinner();
+        //load all transferred medicine batches
         const result: Promise<any> = getTransactionData(
           contractInstance,
           "getAllTransferredMedicineBatches",
@@ -134,6 +144,7 @@ const PharmaDashboardComponent = () => {
             let _approvedCount = approvedCount;
             let _expiredCount = expiredCount;
             subContractIds.forEach((subContract: string) => {
+              //get medicine sub contract batch details
               getTransactionData(
                 contractInstance,
                 "getMedicineBatchSubContractDetails",
@@ -142,7 +153,7 @@ const PharmaDashboardComponent = () => {
               ).then((_record: any) => {
                 const _medicineSubContractData: IMedicineDP = { ..._record };
                 _medicineSubContractData.medicineSubContract = subContract;
-                console.log(_medicineSubContractData);
+
                 if (_medicineSubContractData["medicineStatus"] == 1) {
                   _approvedCount = _approvedCount + 1;
                 }
@@ -200,21 +211,21 @@ const PharmaDashboardComponent = () => {
             toggleToast("error", e?.errorMessage);
           });
       }
-      if (contractInstance && customers.length === 0) {
-        //load customer list
-        getTransactionData(
-          contractInstance,
-          "getCustomerInfoByPharmaShop",
-          selectedAccount,
-          selectedAccount
-        )
-          .then((res: any) => {
+      //load customer list
+      getTransactionData(
+        contractInstance,
+        "getCustomerInfoByPharmaShop",
+        selectedAccount,
+        selectedAccount
+      )
+        .then((res: any) => {
+          setTimeout(() => {
             storeCustomerData(res);
-          })
-          .catch((e: any) => {
-            toggleToast("error", e?.errorMessage);
-          });
-      }
+          }, 100);
+        })
+        .catch((e: any) => {
+          toggleToast("error", e?.errorMessage);
+        });
     } catch (e) {
       toggleToast("error", e?.errorMessage);
     }
@@ -226,6 +237,7 @@ const PharmaDashboardComponent = () => {
   ) => {
     try {
       toggleSpinner();
+      //update medicine batch status
       const result: Promise<any> = sendTransaction(
         contractInstance,
         "updateRecievedMedicineBatchStatus",
@@ -236,6 +248,7 @@ const PharmaDashboardComponent = () => {
       );
       result
         .then((res: any) => {
+          //get medicine sub contract details
           getTransactionData(
             contractInstance,
             "getMedicineBatchSubContractDetails",
@@ -257,15 +270,64 @@ const PharmaDashboardComponent = () => {
                   }
                 }
               );
-              storePharmaDashboardData(
-                [..._updatedList],
-                expiredCount,
-                approvedCount,
-                [...medicineIDs],
-                [...customers],
-                []
-              );
-              toggleToast("success", MEDICINE_SUB_CONTRACT_STATUS_UPDATED);
+              
+              //load medicine details
+              loadMedicineDetails(
+                contractInstance,
+                selectedAccount,
+                medicineBatchObj.medicineId
+              )
+                .then((medicineRecord: any) => {
+                  //load medicine sale status by id
+                  getTransactionData(
+                    contractInstance,
+                    "getMedicineSaleStatusByID",
+                    selectedAccount,
+                    medicineRecord.medicineId
+                  )
+                    .then((_status: any) => {
+                      //get all transaction details for medicine
+                      populateTxBlockDetails(
+                        populateUserDetailsinMedicineRecord(
+                          medicineRecord,
+                          userList.users
+                        )
+                      )?.then((medicineTxData: any) => {
+                        const _updatedData = { ...medicineTxData };
+                        _updatedData.pharmaDetails = populateUserDetails(
+                          "6",
+                          selectedAccount,
+                          userList?.users
+                        );
+
+                        _updatedData.saleStatus = _status;
+                        const medicineRef = allTransactionRef.child(
+                          medicineRecord.medicineId
+                        );
+                        medicineRef.update({
+                          medicineInfo: { ..._updatedData },
+                        });
+                        storePharmaDashboardData(
+                          [..._updatedList],
+                          expiredCount,
+                          approvedCount,
+                          [...medicineIDs],
+                          [...customers],
+                          []
+                        );
+                        toggleToast(
+                          "success",
+                          MEDICINE_SUB_CONTRACT_STATUS_UPDATED
+                        );
+                      });
+                    })
+                    .catch((e: any) => {
+                      toggleToast("error", e?.errorMessage);
+                    });
+                })
+                .catch((e: any) => {
+                  toggleToast("error", e?.errorMessage);
+                });
             })
             .catch((e: any) => {
               toggleToast("error", e?.errorMessage);

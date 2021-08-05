@@ -4,7 +4,7 @@ export const PHARMA_SUPPLY_CHAIN = "PHARMA SUPPLY CHAIN";
 export const APP_DESC =
   "The pharma blockchain based solution will enable streamlined visibility of movement and stakeholders through which drugs or medicines transit in the supply chain. The improved traceability facilitates the optimization of flows of goods and an efficient stock management system.";
 export const CURRENT_YEAR = `${new Date().getFullYear()}`;
-export const APP_FOOTER_TEXT = `${new Date().getFullYear()} Built with ❤️ by Saurabh Shankariya`;
+export const APP_FOOTER_TEXT = `${new Date().getFullYear()} Built with ❤️ by `;
 export const METAMASK_ERR =
   "MetaMask plugin is not installed ! Download Google Chrome &amp; install plugin.";
 export const METAMASK_INSTALLED = "MetaMask is installed !!!";
@@ -201,9 +201,18 @@ export const MEDICINE_INITIATE_SHIPMENT_TEXT =
 
 export const TOTAL_MEDICINES_RECVD = "Total Medicines Received";
 export const PHARMA_TAGGED = "Pharmaceuticals Tagged";
+export const MEDICINE_BATCHES_RCVD_MD = "Initiate & Transfer Medicine Batch";
 
 //Pharma Dashboard Constants
 export const PHARMA_DASHBOARD_TITLE = "Pharma Shop Dashboard";
+export const MEDICINE_SHIPPMENT_STATUS_LIST_AT_PHARMA: Array<string> = [
+  "At Manufacturer",
+  "Batch Received",
+  "",
+  "Batch received at Pharma",
+  "Medicine status updated",
+];
+
 export const MEDICINE_SUB_CONTRACT_SHIPPMENT_STATUS_LIST_AT_PHARMA: Array<string> =
   ["In Transit", "Batch Received", "Updated", "Delivered"];
 
@@ -263,7 +272,7 @@ export const MEDICINE_DETAILS_SUBTITLE = "Medicine Details :";
 export const MATERIAL_DETAILS_SUBTITLE = "Material Details :";
 export const SHOW_MORE = "Show More";
 export const SHOW_LESS = "Show Less";
-export const MEDICINE_SOLD_TO_CUSTOMER = "Medicines Sold To Customers";
+export const MEDICINE_SOLD_TO_CUSTOMER = "Buyer's Information";
 export const CUSTOMER_FORM_TEXT =
   "Submit buyer information & update medicine status.";
 
@@ -289,4 +298,83 @@ export const CUSTOM_ERROR_MESSAGES: Array<{
     errMsg:
       "Something went wrong ! Please make sure you are connected to correct Ethereum address.",
   },
+  {
+    code: -32000,
+    keyword: "USR_NT_REG",
+    errMsg: "Incorrect credentials. User does not exist.",
+  },
+  {
+    code: -32001,
+    keyword: "USR_EXIST",
+    errMsg: "User is already registered.",
+  },
+  {
+    code: -32002,
+    keyword: "USR_NT_ACTIVE",
+    errMsg: "User is not active.",
+  },
+  {
+    code: -32003,
+    keyword: "USR_DELETED",
+    errMsg: "Incorrect credentials. User is removed.",
+  },
+  {
+    code: -32004,
+    keyword: "OACC",
+    errMsg: "Access denied. Only admin user has an access.",
+  },
+  {
+    code: -32005,
+    keyword: "ORMSCC",
+    errMsg: "Access denied. Only raw material supplier has an access.",
+  },
+  {
+    code: -32006,
+    keyword: "RM_MUST_AT_S",
+    errMsg: "Action denied. Raw material package should be at supplier.",
+  },
+  {
+    code: -32007,
+    keyword: "RM_MUST_AT_M",
+    errMsg: "Action denied. Raw material package should be at manufacturer.",
+  },
+  {
+    code: -32008,
+    keyword: "OMCC",
+    errMsg: "Access denied. Only product manufacturer has an access.",
+  },
+  {
+    code: -32009,
+    keyword: "M_MUST_AT_M",
+    errMsg: "Action denied. Medicine batch should be at manufacturer.",
+  },
+  {
+    code: -32010,
+    keyword: "M_MUST_AT_D",
+    errMsg: "Action denied. Medicine batch should be at manufacturer.",
+  },
+  {
+    code: -32011,
+    keyword: "M_MUST_AT_P",
+    errMsg: "Action denied. Medicine batch should be at pharmaceutical shop.",
+  },
+  {
+    code: -32012,
+    keyword: "ODCC",
+    errMsg: "Access denied. Only product distributor has an access.",
+  },
+  {
+    code: -32013,
+    keyword: "OPCC",
+    errMsg: "Access denied. Only pharmaceutical shop has an access.",
+  },
+  {
+    code: -32014,
+    keyword: "M_MUST_AT_APRD",
+    errMsg: "Action denied. Medicine is not approved by receiver.",
+  },
 ];
+
+export const TRACK_UPDATES = "Scan & Track Medicine Batch Updates";
+export const CONTENT_LOADING = "Please wait...";
+export const SUPPLY_CHAIN_UPDATES_PAGE_TITLE = "Medicine Supply Chain Updates";
