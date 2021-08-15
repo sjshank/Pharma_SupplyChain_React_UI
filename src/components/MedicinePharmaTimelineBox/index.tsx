@@ -65,7 +65,10 @@ const MedicinePharmaTimelineBoxComponent = ({
                 />
                 <ListItemPairComponent
                   label="Amount Paid"
-                  value={customerInfo.amountPaid}
+                  value={new Intl.NumberFormat("en-IN", {
+                    style: "currency",
+                    currency: "INR",
+                  }).format(customerInfo.amountPaid)}
                   classes={classes}
                 />
                 <ListItemPairComponent

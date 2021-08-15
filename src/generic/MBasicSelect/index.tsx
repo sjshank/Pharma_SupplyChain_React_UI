@@ -4,7 +4,11 @@ import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
-import { IOption } from "../../models/user.interface";
+
+export interface IOption {
+  key: any;
+  value: any;
+}
 
 type MBasicSelectProps = {
   id?: string;
@@ -19,6 +23,7 @@ type MBasicSelectProps = {
   inputProps?: object;
   options: Array<IOption> | any;
   placeholder?: string;
+  defaultValue?: any;
   changeHandler: (e: any, param?: any) => void;
 };
 
@@ -53,6 +58,7 @@ const MSimpleSelectComponent = ({
   disabled,
   changeHandler,
   placeholder,
+  defaultValue,
 }: MBasicSelectProps) => {
   const classes = useStyles();
 
@@ -68,6 +74,7 @@ const MSimpleSelectComponent = ({
           label={label}
           disabled={disabled}
           placeholder={placeholder}
+          defaultValue={defaultValue}
         >
           {options.map((option: IOption) => {
             return (

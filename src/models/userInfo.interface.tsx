@@ -18,3 +18,10 @@ export interface IUserInfoContext {
   userInfo: IUserInfo;
   userInfoAction: IUserInfoAction;
 }
+
+export interface IUserRole {
+  roleName: string;
+  bgColor: string;
+  permission: string;
+  color: string;
+}

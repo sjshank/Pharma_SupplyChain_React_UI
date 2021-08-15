@@ -12,7 +12,7 @@ import useTableHeaders from "../../hooks/useTableHeaders";
 import MTableHeadersComponent from "../TableHeaders";
 import MTypographyComponent from "../MTypography";
 import MTableCellComponent from "../MTableCell";
-import { NO_RECORDS_FOUND } from "../../utils/constants";
+import NoRecordsComponent from "../NoRecordsFound";
 
 type UserListProps = {
   label: string;
@@ -71,13 +71,9 @@ const UserListComponent = ({
     return (
       <TableBody>
         {users.length === 0 && (
-          <TableRow>
-            <TableCell colSpan={tableHeaders.length} align="center">
-              {NO_RECORDS_FOUND}
-            </TableCell>
-          </TableRow>
+          <NoRecordsComponent length={tableHeaders.length} />
         )}
-        {users.map((row: any) => (
+        {users.map((row: IUserInfo) => (
           <TableRow key={row.userAddress}>
             <TableCell align="left" className={classes.tableBodyCell}>
               <span style={{ color: color, fontWeight: 600 }}>

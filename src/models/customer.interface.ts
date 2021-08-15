@@ -1,4 +1,5 @@
 export interface ICustomer {
+  medicineSubContract?: string | any;
   materialId?: string | any;
   medicineId?: string | any;
   customerName: string | any;

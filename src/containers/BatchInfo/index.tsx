@@ -66,7 +66,7 @@ const BatchInfoComponent = () => {
 
   useEffect(() => {
     if (contractInstance && userList?.users?.length === 0) {
-      loadUsers(contractInstance, selectedAccount)
+      loadUsers()
         .then((users: any) => {
           const list = populateRoleBasedList(users);
           setUserList({
@@ -93,11 +93,7 @@ const BatchInfoComponent = () => {
                 .then((materialIds: any) => {
                   //Retrieve raw material details for each material id
                   materialIds.forEach((matId: any) => {
-                    loadRegisteredRawMaterial(
-                      contractInstance,
-                      selectedAccount,
-                      matId
-                    )
+                    loadRegisteredRawMaterial(matId)
                       .then((res: any) => {
                         _rawMaterials.push(res as IRawMaterial);
                         setTimeout(() => {
@@ -124,7 +120,7 @@ const BatchInfoComponent = () => {
 
   useEffect(() => {
     if (contractInstance) {
-      loadUsers(contractInstance, selectedAccount)
+      loadUsers()
         .then((users: any) => {
           const list = populateRoleBasedList(users);
           const _medicineBatches: IMedicine[] = [];
@@ -143,11 +139,7 @@ const BatchInfoComponent = () => {
                   //retrieve each medicine details
                   medicineIds
                     .forEach((medId: any, index: number) => {
-                      loadMedicineDetails(
-                        contractInstance,
-                        selectedAccount,
-                        medId
-                      ).then((_record: any) => {
+                      loadMedicineDetails(medId).then((_record: any) => {
                         _medicineBatches.push(_record as IMedicine);
                         if (medicineIds.length - 1 == index) {
                           setTimeout(() => {
@@ -188,23 +180,23 @@ const BatchInfoComponent = () => {
             </Grid>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} lg={12}>
-                <RawMaterialsReceivedComponent
+                {/* <RawMaterialsReceivedComponent
                   userList={userList.users}
                   rawMaterialsReceived={rawMaterials}
                   userInfo={userInfo}
                   isReadonly={true}
                   title={RAW_MATERIAL_SHIPMENT_STATUS}
                   materialTableHeaders={materialTableHeaders}
-                />
+                /> */}
               </Grid>
               <Grid item xs={12} sm={12} lg={12}>
-                <MedicineReceivedMDComponent
+                {/* <MedicineReceivedMDComponent
                   userList={userList.users}
                   medicinesReceivedFromManuf={medicineBatches}
                   title={MED_BATCHES_SHIPMENT_STATUS}
                   isReadonly={true}
                   medicineTableHeaders={medicineTableHeaders}
-                />
+                /> */}
               </Grid>
             </Grid>
           </div>

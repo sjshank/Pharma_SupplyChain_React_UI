@@ -1,148 +1,58 @@
 import React, {
-  lazy,
   MouseEventHandler,
   ReactNode,
   useContext,
-  useState,
+  useReducer,
 } from "react";
-import MBasicTableComponent from "../../generic/MBasicTable";
-import PaperHeaderComponent from "../PaperHeader";
-import Avatar from "@material-ui/core/Avatar";
-import Paper from "@material-ui/core/Paper";
-import TableBody from "@material-ui/core/TableBody";
-import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
-import EventAvailableOutlinedIcon from "@material-ui/icons/EventAvailableOutlined";
 import MButtonComponent from "../../generic/MButton";
 import { IUserInfo } from "../../models/userInfo.interface";
 import MTooltipComponent from "../../generic/MTooltip";
 import MTypographyComponent from "../../generic/MTypography";
-import LocalShippingIcon from "@material-ui/icons/LocalShipping";
-import AttachFileOutlinedIcon from "@material-ui/icons/AttachFileOutlined";
-import ReceiptOutlinedIcon from "@material-ui/icons/ReceiptOutlined";
-import TransferWithinAStationIcon from "@material-ui/icons/TransferWithinAStation";
+import MChipComponent from "../../generic/MChip";
 import { IMedicine } from "../../models/medicine.interface";
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
-import { green, yellow } from "@material-ui/core/colors";
 import {
-  MEDICINE_INITIATE_SHIPMENT_TEXT,
   MEDICINE_SHIPPMENT_STATUS_LIST_AT_MANUFACTURER,
-  NO_RECORDS_FOUND,
+  ROLE_BRAND,
   TRACK_UPDATES,
 } from "../../utils/constants";
-import useTableHeaders from "../../hooks/useTableHeaders";
-import MTableHeadersComponent from "../../generic/TableHeaders";
 import { IDialogContext } from "../../models/dialog.interface";
 import { DialogContext } from "../../context/DialogContext";
-import { populateUserName } from "../../utils/helpers";
-import MedicineTitleComponent from "../MedicineTitle";
-
-const MFormDialogComponent = lazy(() => import("../../generic/MFormDialog"));
-const MConfirmationDialogComponent = lazy(
-  () => import("../../generic/MConfirmationDialog")
-);
-const RegisterMedicineBatchComponent = lazy(
-  () => import("../RegisterMedicineBatch")
-);
+import {
+  materialReducer,
+  medicineReducer,
+  MEDICINE_STATE,
+  RAW_MATERIAL_STATE,
+  viewReducer,
+  VIEW_STATE,
+} from "./reducer";
+import Fab from "@material-ui/core/Fab";
+import NavigationIcon from "@material-ui/icons/Navigation";
+import SelectMaterialComponent from "../SelectMaterial";
+import RawMaterialVerificationComponent from "../RawMaterialVerification";
+import RegisterMedicineBatchComponent from "../RegisterMedicineBatch";
+import MFormDialogComponent from "../../generic/MFormDialog";
+import { ManufacturerContext } from "../../context/ManufacturerContext";
+import { IManufacturerContext } from "../../models/manufacturer.interface";
+import { IRawMaterial } from "../../models/material.interface";
+import { useRef } from "react";
+import MedicineTable from "../../generic/MedicineTable";
 
 type MedicinesManufacturedProps = {
   regMedicineBatches: IMedicine[];
   userList: IUserInfo[];
-  transportMedicineBatch: any;
   updateMedicineBatch: any;
+  sendMedicineForQualityCheck: any;
+  registerNewMedicineBatch?: any;
 };
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: {
-      padding: theme.spacing(2),
-      textAlign: "center",
-      color: theme.palette.text.secondary,
-      minHeight: "200px",
-    },
-    label: {
-      display: "flex",
-      justifyContent: "start",
-      textAlign: "left",
-      // color: "#053742",
-    },
-    icon: {
-      textAlign: "left",
-      marginRight: "4px",
-    },
-    tableHeadCell: {
-      fontSize: 15,
-      padding: "8px",
-      color: "rgba(0, 0, 0, 0.54)",
-      fontWeight: theme.typography.fontWeightBold,
-    },
-    tableBodyCell: {
-      fontSize: 12,
-      padding: "8px",
-      maxWidth: "180px",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
-    },
-    actionLinkCell: {
-      fontSize: 12,
-      padding: "8px",
-      width: "220px",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
-    },
-    roleChip: {
-      fontSize: 12,
-      width: "150px",
-      span: {
-        padding: "6px",
-      },
-    },
     addMedicineBtn: {
       float: "right",
-      marginTop: "-35px",
-      // color: "rgb(41, 187, 137)",
-      // border: "1px solid rgb(41, 187, 137)",
+      marginTop: "-40px",
       fontWeight: 600,
-    },
-    actionBtn: {
-      cursor: "pointer",
-      fontSize: "16px",
-    },
-    actionLink: {
-      cursor: "pointer",
-      color: "#04009A",
-      fontWeight: 600,
-      textDecoration: "underline",
-      display: "inline-block",
-      paddingLeft: "5px",
-      paddingRight: "5px",
-      fontSize: "16px",
-    },
-    atManufacturer: {
-      backgroundColor: "#444444",
-      width: "100%",
-      height: "30px",
-      fontWeight: 600,
-      fontSize: "12px",
-    },
-    transfer: {
-      backgroundColor: yellow[700],
-      width: "100%",
-      height: "30px",
-      fontWeight: 600,
-      fontSize: "12px",
-    },
-    delivered: {
-      backgroundColor: green[500],
-      width: "100%",
-      height: "30px",
-      fontWeight: 600,
-      fontSize: "12px",
-    },
-    registerSubtitleModal: {
-      paddingBottom: theme.spacing(1),
     },
   })
 );
@@ -150,54 +60,88 @@ const useStyles = makeStyles((theme: Theme) =>
 const MedicinesManufacturedComponent = ({
   regMedicineBatches,
   userList,
-  transportMedicineBatch,
   updateMedicineBatch,
+  sendMedicineForQualityCheck,
+  registerNewMedicineBatch,
 }: MedicinesManufacturedProps) => {
   const classes = useStyles();
-  const tableHeaders = useTableHeaders("medicinesManufactured");
 
   const dialogContext = useContext<IDialogContext>(DialogContext);
   const { dialogStatus, updateDialogStatus } = dialogContext;
 
-  const [medicineBatchFormState, setMedicineBatchFormState] =
-    useState<IMedicine>({
-      medicineId: "",
-      materialId: "",
-      medicineName: "",
-      description: "",
-      location: "",
-      quantity: 0,
-      shipper: "",
-      manufacturer: "",
-      distributor: "",
-      packageStatus: "",
+  const manufacturerContext =
+    useContext<IManufacturerContext>(ManufacturerContext);
+  const { rawMaterialsReceived } = manufacturerContext;
+
+  const [medicineBatchFormState, dispatchMedicineBatchFormStateAction] =
+    useReducer(medicineReducer, {
+      ...MEDICINE_STATE,
     });
+
+  const [viewState, dispatchViewStateAction] = useReducer(viewReducer, {
+    ...VIEW_STATE,
+  });
+
+  const [rawMaterialFormState, dispatchRawMaterialFormStateAction] = useReducer(
+    materialReducer,
+    {
+      ...RAW_MATERIAL_STATE,
+    }
+  );
+
+  const selectedMaterial = useRef<IRawMaterial>({} as IRawMaterial);
+
+  const handleMaterialChange: MouseEventHandler = (e: any) => {
+    const data: any = rawMaterialsReceived.find((mat: IRawMaterial) => {
+      if (mat.materialId.toLowerCase() === e?.target?.value?.toLowerCase()) {
+        return mat;
+      }
+    });
+    selectedMaterial.current = data;
+    dispatchRawMaterialFormStateAction({
+      type: "SET_RAW_MATERIAL",
+      data: data,
+    });
+    dispatchViewStateAction({
+      type: "SHOW_MATERIAL_DETAILS",
+      showMaterialDetails: true,
+    });
+  };
 
   const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     _field: IMedicine
   ) => {
-    setMedicineBatchFormState({
-      ...medicineBatchFormState,
-      [event.target.name]: event.target.value,
+    dispatchMedicineBatchFormStateAction({
+      type: "SET_VALUE",
+      key: event.target.name,
+      value: event.target.value,
     });
   };
 
-  const toggleTransportMedicineBatchDialog: any = (
-    medicineBatchObj: IMedicine
-  ) => {
-    setMedicineBatchFormState(medicineBatchObj);
+  const toggleRegisterMedicineBatchDialog = () => {
+    dispatchViewStateAction({
+      type: "SELECT_MATERIAL",
+      isSelectMaterial: true,
+    });
     updateDialogStatus(
-      false,
       true,
-      "Medicine Batch Shipment",
       false,
-      "medicineManufactured"
+      "Register Medicine Batch",
+      false,
+      "medicineBatchRegistration"
     );
   };
 
   const toggleEditMedicineDialog: any = (medicineBatchObj: IMedicine) => {
-    setMedicineBatchFormState(medicineBatchObj);
+    dispatchMedicineBatchFormStateAction({
+      type: "SET_MEDICINE",
+      data: medicineBatchObj,
+    });
+    dispatchViewStateAction({
+      type: "EDIT_MEDICINE_DETAILS",
+      isEditMedicine: true,
+    });
     updateDialogStatus(
       true,
       false,
@@ -205,6 +149,13 @@ const MedicinesManufacturedComponent = ({
       false,
       "medicineManufactured"
     );
+  };
+
+  const proceedWithMedicineRegistration: any = () => {
+    dispatchViewStateAction({
+      type: "SUBMIT_MEDICINE_DETAILS",
+      isSubmitMedicineDetails: true,
+    });
   };
 
   const closeDialog: MouseEventHandler = () => {
@@ -221,199 +172,166 @@ const MedicinesManufacturedComponent = ({
     );
   };
 
-  const populateTableBody = () => {
+  const populateColumns = (row: IMedicine, classes: any): ReactNode => {
     return (
-      <TableBody>
-        {regMedicineBatches.length === 0 && (
-          <TableRow>
-            <TableCell colSpan={tableHeaders.length} align="center">
-              {NO_RECORDS_FOUND}
-            </TableCell>
-          </TableRow>
-        )}
-        {regMedicineBatches.map((row: IMedicine) => (
-          <TableRow key={row.medicineId}>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              <MedicineTitleComponent
-                row={row}
-                handleQRCodeEvent={handleQRCodeEvent}
-                dialogStatus={dialogStatus}
-                closeDialog={closeDialog}
-              />
-            </TableCell>
-            {/* <TableCell align="left" className={classes.tableBodyCell}>
-              <MTooltipComponent title={row.description} placement="top">
-                <span>{row.description}</span>
-              </MTooltipComponent>
-            </TableCell> */}
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.location}
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.quantity}
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              <MTooltipComponent title={row.distributor} placement="top">
-                <span style={{ color: "#17B978", fontWeight: 600 }}>
-                  {populateUserName("5", row.distributor, userList)}
-                </span>
-              </MTooltipComponent>
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              <MTooltipComponent title={row.shipper} placement="top">
-                <span style={{ color: "#444444", fontWeight: 600 }}>
-                  {populateUserName("2", row.shipper, userList)}
-                </span>
-              </MTooltipComponent>
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.packageStatus == 0 && (
-                <Avatar variant="rounded" className={classes.atManufacturer}>
-                  <AttachFileOutlinedIcon fontSize="small" />
-                  &nbsp;
-                  {
-                    MEDICINE_SHIPPMENT_STATUS_LIST_AT_MANUFACTURER[
-                      row?.packageStatus
-                    ]
-                  }
-                </Avatar>
-              )}
-              {row.packageStatus == 1 && (
-                <Avatar variant="rounded" className={classes.transfer}>
-                  <LocalShippingIcon fontSize="small" />
-                  &nbsp;
-                  {
-                    MEDICINE_SHIPPMENT_STATUS_LIST_AT_MANUFACTURER[
-                      row?.packageStatus
-                    ]
-                  }
-                </Avatar>
-              )}
-              {row.packageStatus == 2 && (
-                <Avatar variant="rounded" className={classes.transfer}>
-                  <TransferWithinAStationIcon fontSize="small" />
-                  &nbsp;
-                  {
-                    MEDICINE_SHIPPMENT_STATUS_LIST_AT_MANUFACTURER[
-                      row?.packageStatus
-                    ]
-                  }
-                </Avatar>
-              )}
-              {row.packageStatus == 3 && (
-                <Avatar variant="rounded" className={classes.transfer}>
-                  <TransferWithinAStationIcon fontSize="small" />
-                  &nbsp;
-                  {
-                    MEDICINE_SHIPPMENT_STATUS_LIST_AT_MANUFACTURER[
-                      row?.packageStatus
-                    ]
-                  }
-                </Avatar>
-              )}
-              {row.packageStatus == 4 && (
-                <Avatar variant="rounded" className={classes.delivered}>
-                  <ReceiptOutlinedIcon fontSize="small" />
-                  &nbsp;
-                  {
-                    MEDICINE_SHIPPMENT_STATUS_LIST_AT_MANUFACTURER[
-                      row?.packageStatus
-                    ]
-                  }
-                </Avatar>
-              )}
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row?.packageStatus == 0 && (
-                <>
-                  <span
-                    onClick={() => toggleEditMedicineDialog(row)}
-                    className={classes.actionLink}
-                  >
-                    <MTypographyComponent variant="button" text="Edit" />
-                  </span>
-                  |
-                </>
-              )}
-              {row?.packageStatus == 0 && (
-                <span
-                  onClick={() => toggleTransportMedicineBatchDialog(row)}
-                  className={classes.actionLink}
+      <>
+        <TableCell align="left" className={classes.tableBodyCell}>
+          <MChipComponent
+            label={
+              MEDICINE_SHIPPMENT_STATUS_LIST_AT_MANUFACTURER[row?.packageStatus]
+            }
+            size="small"
+            bgColor={
+              row?.packageStatus == 2 || row?.packageStatus == 6
+                ? ROLE_BRAND["rejected"]["bgColor"]
+                : ROLE_BRAND["manufacturer"]["bgColor"]
+            }
+          />
+        </TableCell>
+        <TableCell align="left" className={classes.tableBodyCell}>
+          {row?.packageStatus == 0 && (
+            <>
+              <Fab
+                variant="extended"
+                size="small"
+                className={classes.fabBtn}
+                onClick={() => toggleEditMedicineDialog(row)}
+              >
+                <NavigationIcon fontSize="small" />
+                <MTooltipComponent
+                  title="Edit medicine details"
+                  placement="top"
                 >
-                  <MTypographyComponent variant="button" text="Transport" />
-                </span>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
+                  <span>Edit</span>
+                </MTooltipComponent>
+              </Fab>
+              <Fab
+                variant="extended"
+                size="small"
+                className={classes.fabBtn}
+                onClick={() => sendMedicineForQualityCheck(row)}
+              >
+                <NavigationIcon fontSize="small" />
+                <MTooltipComponent
+                  title="Send medicine batch for quality control inspection"
+                  placement="top"
+                >
+                  <span>Quality Check</span>
+                </MTooltipComponent>
+              </Fab>
+            </>
+          )}
+        </TableCell>
+      </>
     );
   };
 
   const populateFormDialogFooter = (): ReactNode => {
     return (
       <>
-        <MButtonComponent
-          variant="outlined"
-          label="Cancel"
-          color="secondary"
-          clickHandler={closeDialog}
-        />
-        <MButtonComponent
-          variant="contained"
-          label="Update"
-          color="primary"
-          clickHandler={() => updateMedicineBatch(medicineBatchFormState)}
-        />
-      </>
-    );
-  };
+        {/* select material screen */}
+        {viewState.isSelectMaterial && (
+          <>
+            <MButtonComponent
+              variant="outlined"
+              label="Cancel"
+              color="secondary"
+              clickHandler={closeDialog}
+            />
+          </>
+        )}
 
-  const populateConfirmDialogFooter = (): ReactNode => {
-    return (
-      <>
-        <MButtonComponent
-          variant="outlined"
-          label="Cancel"
-          color="secondary"
-          clickHandler={closeDialog}
-        />
-        <MButtonComponent
-          variant="contained"
-          label="Confirm"
-          color="primary"
-          clickHandler={() => transportMedicineBatch(medicineBatchFormState)}
-        />
+        {/* show material details screen */}
+        {viewState.showMaterialDetails && (
+          <>
+            <MButtonComponent
+              variant="outlined"
+              label="Cancel"
+              color="secondary"
+              clickHandler={closeDialog}
+            />
+            <MButtonComponent
+              variant="contained"
+              label="Next"
+              color="primary"
+              clickHandler={() => proceedWithMedicineRegistration()}
+            />
+          </>
+        )}
+
+        {/* register new medicine screen */}
+        {viewState.isSubmitMedicineDetails && (
+          <>
+            <MButtonComponent
+              variant="outlined"
+              label="Cancel"
+              color="secondary"
+              clickHandler={closeDialog}
+            />
+            <MButtonComponent
+              variant="contained"
+              label="Submit"
+              color="primary"
+              clickHandler={() =>
+                registerNewMedicineBatch(
+                  medicineBatchFormState,
+                  selectedMaterial.current
+                )
+              }
+            />
+          </>
+        )}
+
+        {/* register new medicine screen */}
+        {viewState.isEditMedicine && (
+          <>
+            <MButtonComponent
+              variant="outlined"
+              label="Cancel"
+              color="secondary"
+              clickHandler={closeDialog}
+            />
+            <MButtonComponent
+              variant="contained"
+              label="Submit"
+              color="primary"
+              clickHandler={() => updateMedicineBatch(medicineBatchFormState)}
+            />
+          </>
+        )}
       </>
     );
   };
 
   return (
-    <Paper className={classes.root} elevation={3} square={true}>
-      <PaperHeaderComponent
-        IconComp={<EventAvailableOutlinedIcon style={{ color: "#29BB89" }} />}
-        label="Medicine Batches Available"
-        textVariant="button"
+    <>
+      <MButtonComponent
+        variant="outlined"
+        label="Register New Medicine Batch"
+        classname={classes.addMedicineBtn}
+        clickHandler={toggleRegisterMedicineBatchDialog}
       />
       <MTypographyComponent
         variant="subtitle1"
         text={`Showing ${regMedicineBatches.length} records`}
-        style={{ color: "#29BB89" }}
+        style={{ color: "#29BB89", clear: "both" }}
       />
-      <MBasicTableComponent
-        tableBody={populateTableBody()}
-        tableHeader={
-          <MTableHeadersComponent
-            tableHeaders={tableHeaders}
-            classes={classes}
-          />
-        }
+      <MedicineTable
         tableName="Medicines Manufactured"
         tableId="medicinesManufacturedTbl"
+        dataList={regMedicineBatches}
+        userList={userList}
         height="350px"
-        stickyHeader={true}
+        tableHeaderIdentifier="medicinesManufactured"
+        showShipperCol={true}
+        showDistributorCol={true}
+        getColumns={populateColumns}
+        dialogStatus={dialogStatus}
+        closeDialog={closeDialog}
+        handleQRCodeEvent={handleQRCodeEvent}
       />
-      {dialogStatus.dialogId == "medicineManufactured" && (
+      {(dialogStatus.dialogId == "medicineManufactured" ||
+        dialogStatus.dialogId == "medicineBatchRegistration") && (
         <MFormDialogComponent
           title={dialogStatus.dialogTitle}
           open={dialogStatus.openFormDialog}
@@ -423,35 +341,31 @@ const MedicinesManufacturedComponent = ({
           maxWidth="sm"
         >
           <>
-            <div>
-              <MTypographyComponent
-                text="Edit your medicine batch details"
-                variant="caption"
+            {viewState.isSelectMaterial && (
+              <SelectMaterialComponent
+                handleMaterialChange={handleMaterialChange}
               />
-            </div>
-            <RegisterMedicineBatchComponent
-              userList={userList}
-              medicineBatchFormState={medicineBatchFormState}
-              handleInputChange={handleInputChange}
-              isEditMode={false}
-            />
+            )}
+            {viewState.showMaterialDetails && (
+              <RawMaterialVerificationComponent
+                rawMaterialFormState={rawMaterialFormState}
+                userList={userList}
+                isFormDisabled={true}
+              />
+            )}
+            {(viewState.isSubmitMedicineDetails ||
+              viewState.isEditMedicine) && (
+              <RegisterMedicineBatchComponent
+                userList={userList}
+                medicineBatchFormState={medicineBatchFormState}
+                handleInputChange={handleInputChange}
+                isEditMode={false}
+              />
+            )}
           </>
         </MFormDialogComponent>
       )}
-      {dialogStatus.dialogId == "medicineManufactured" && (
-        <MConfirmationDialogComponent
-          title={dialogStatus.dialogTitle}
-          isOpen={dialogStatus.openConfirmDialog}
-          dialogId="medicineConfrimationDialog"
-          footerButtons={populateConfirmDialogFooter()}
-        >
-          <MTypographyComponent
-            text={MEDICINE_INITIATE_SHIPMENT_TEXT}
-            variant="caption"
-          />
-        </MConfirmationDialogComponent>
-      )}
-    </Paper>
+    </>
   );
 };
 

@@ -1,26 +1,19 @@
-import React, { useContext } from "react";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { IUserInfo } from "../../../models/userInfo.interface";
 import MTextFieldComponent from "../../../generic/MTextField";
 import MSimpleSelectComponent from "../../../generic/MBasicSelect";
-
-interface IRawMaterialFields {
-  supplier?: string | any;
-  producerName: string | any;
-  description: string | any;
-  location: string | any;
-  quantity: number | any;
-  shipper: string | any;
-  manufacturer: string | any;
-  packageStatus?: string | number | any;
-}
+import { IRawMaterial } from "../../../models/material.interface";
+import { QC_INSPECTION_HELP_TEXT } from "../../../utils/constants";
+import { getUserListForDropdown } from "../../../utils/helpers";
 
 type RawMaterialFormProps = {
-  rawMaterialState: IRawMaterialFields;
+  rawMaterialState: IRawMaterial;
   handleInputChange?: any;
   isEditMode?: boolean;
-  userList?: Array<IUserInfo>;
+  userList: Array<IUserInfo>;
   formStyles?: any;
+  isFormDisabled?:boolean
 };
 
 const useFormStyles = makeStyles((theme) => ({
@@ -48,34 +41,13 @@ const RawMaterialFormComponent = ({
   isEditMode = false,
   userList,
   formStyles = null,
+  isFormDisabled = false
 }: RawMaterialFormProps) => {
   let formClasses = useFormStyles();
   if (formStyles) {
     formClasses = formStyles;
   }
-
-  /*  Populate Registered Manufacture & Transporter list */
-  const manuFactures: Array<{ key: any; value: any }> = [];
-  const transporters: Array<{ key: any; value: any }> = [];
-
-  if (Array.isArray(userList)) {
-    userList.map((usr: IUserInfo) => {
-      if (
-        !usr.isDeleted &&
-        usr.userStatus === "Active" &&
-        usr.userRole === "3"
-      ) {
-        return manuFactures.push({ key: usr.userName, value: usr.userAddress });
-      }
-      if (
-        !usr.isDeleted &&
-        usr.userStatus === "Active" &&
-        usr.userRole === "2"
-      ) {
-        return transporters.push({ key: usr.userName, value: usr.userAddress });
-      }
-    });
-  }
+  const result = getUserListForDropdown(userList);
 
   return (
     <div>
@@ -86,8 +58,8 @@ const RawMaterialFormComponent = ({
           name="producerName"
           label="Material Name"
           variant="outlined"
-          disabled={isEditMode}
           value={rawMaterialState.producerName}
+          disabled={isFormDisabled}
           classname={formClasses.textField}
           changeHandler={handleInputChange}
         />
@@ -99,8 +71,8 @@ const RawMaterialFormComponent = ({
           name="description"
           label="Material Description"
           variant="outlined"
-          disabled={isEditMode}
           value={rawMaterialState.description}
+          disabled={isFormDisabled}
           classname={formClasses.textField}
           changeHandler={handleInputChange}
         />
@@ -112,8 +84,8 @@ const RawMaterialFormComponent = ({
           name="location"
           label="Location"
           variant="outlined"
-          disabled={isEditMode}
           value={rawMaterialState.location}
+          disabled={isFormDisabled}
           classname={formClasses.textField}
           changeHandler={handleInputChange}
         />
@@ -124,10 +96,10 @@ const RawMaterialFormComponent = ({
           id="quantity"
           name="quantity"
           type="number"
-          label="Quantity (In Numbers)"
+          label="Quantity (In Kgs)"
           variant="outlined"
-          disabled={isEditMode}
           value={rawMaterialState.quantity}
+          disabled={isFormDisabled}
           classname={formClasses.textField}
           changeHandler={handleInputChange}
         />
@@ -139,9 +111,9 @@ const RawMaterialFormComponent = ({
           name="manufacturer"
           label="Medicine Manufacturer"
           variant="outlined"
-          disabled={isEditMode}
           selectedValue={rawMaterialState.manufacturer}
-          options={manuFactures ? manuFactures : []}
+          disabled={isFormDisabled}
+          options={result.manuFactures ? result.manuFactures : []}
           helpText="Manufacturer's wallet address"
           classname={formClasses.select}
           changeHandler={handleInputChange}
@@ -154,10 +126,26 @@ const RawMaterialFormComponent = ({
           name="shipper"
           label="Transporter"
           variant="outlined"
-          disabled={isEditMode}
           selectedValue={rawMaterialState.shipper}
-          options={transporters ? transporters : []}
+          disabled={isFormDisabled}
+          options={result.transporters ? result.transporters : []}
           helpText="Transporter's wallet address"
+          classname={formClasses.select}
+          changeHandler={handleInputChange}
+        />
+      </div>
+      {/* remove disable when more than 1 inspector is available */}
+      <div className={formClasses.textFieldBar}>
+        <MSimpleSelectComponent
+          required={true}
+          id="inspector"
+          name="inspector"
+          label="Quality Control Inspector"
+          variant="outlined"
+          disabled={true}
+          selectedValue={result.inspectors[0]?.value}
+          options={result.inspectors ? result.inspectors : []}
+          helpText={QC_INSPECTION_HELP_TEXT}
           classname={formClasses.select}
           changeHandler={handleInputChange}
         />

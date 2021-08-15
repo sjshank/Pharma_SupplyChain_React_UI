@@ -1,5 +1,5 @@
-import React, { useContext, useState } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import React, { useContext } from "react";
+import makeStyles from "@material-ui/core/styles/makeStyles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
@@ -8,7 +8,6 @@ import { useHistory } from "react-router";
 import Container from "@material-ui/core/Container";
 import { UserInfoContext } from "../../context/UserContext";
 import { IUserInfoContext } from "../../models/userInfo.interface";
-import { useEffect } from "react";
 import useIsAuthorized from "../../hooks/useIsAuthorized";
 import { LoginContext } from "../../context/LoginContext";
 import { ILoginContext } from "../../models/login.interface";

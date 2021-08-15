@@ -2,16 +2,15 @@ import React, { ReactNode } from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import TableBody from "@material-ui/core/TableBody";
-import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
 import MBasicTableComponent from "../../generic/MBasicTable";
 import Chip from "@material-ui/core/Chip";
-import { IUserRole } from "../../models/user.interface";
 import { USER_ROLES } from "../../utils/constants";
 import PaperHeaderComponent from "../PaperHeader";
 import useTableHeaders from "../../hooks/useTableHeaders";
 import MTableHeadersComponent from "../../generic/TableHeaders";
+import { IUserRole } from "../../models/userInfo.interface";
 
 type UserRolesProps = {
   IconComp: React.ReactNode;
@@ -96,7 +95,7 @@ const UserRolesComponent = ({ IconComp, label }: UserRolesProps) => {
         tableHeader={<MTableHeadersComponent tableHeaders={tableHeaders} />}
         tableName="User Roles"
         tableId="userRoleTbl"
-        height="333px"
+        height="380px"
         stickyHeader={true}
       />
     </Paper>

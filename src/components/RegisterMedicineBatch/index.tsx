@@ -4,6 +4,8 @@ import { IMedicine } from "../../models/medicine.interface";
 import MTextFieldComponent from "../../generic/MTextField";
 import MSimpleSelectComponent from "../../generic/MBasicSelect";
 import { IUserInfo } from "../../models/userInfo.interface";
+import { QC_INSPECTION_HELP_TEXT } from "../../utils/constants";
+import { getUserListForDropdown } from "../../utils/helpers";
 
 type RegistereMedicineBatchProps = {
   medicineBatchFormState: IMedicine;
@@ -43,29 +45,7 @@ const RegisterMedicineBatchComponent = ({
   if (formStyles) {
     formClasses = formStyles;
   }
-
-  /*  Populate Registered Manufacture & Transporter list */
-  const distributors: Array<{ key: any; value: any }> = [];
-  const transporters: Array<{ key: any; value: any }> = [];
-
-  if (Array.isArray(userList)) {
-    userList.map((usr: IUserInfo) => {
-      if (
-        !usr.isDeleted &&
-        usr.userStatus === "Active" &&
-        usr.userRole === "5"
-      ) {
-        return distributors.push({ key: usr.userName, value: usr.userAddress });
-      }
-      if (
-        !usr.isDeleted &&
-        usr.userStatus === "Active" &&
-        usr.userRole === "2"
-      ) {
-        return transporters.push({ key: usr.userName, value: usr.userAddress });
-      }
-    });
-  }
+  const result = getUserListForDropdown(userList);
 
   return (
     <div>
@@ -131,7 +111,7 @@ const RegisterMedicineBatchComponent = ({
           variant="outlined"
           disabled={isEditMode}
           selectedValue={medicineBatchFormState.distributor}
-          options={distributors ? distributors : []}
+          options={result.distributors ? result.distributors : []}
           helpText="Distributor's wallet address"
           classname={formClasses.select}
           changeHandler={handleInputChange}
@@ -146,8 +126,23 @@ const RegisterMedicineBatchComponent = ({
           variant="outlined"
           disabled={isEditMode}
           selectedValue={medicineBatchFormState.shipper}
-          options={transporters ? transporters : []}
+          options={result.transporters ? result.transporters : []}
           helpText="Transporter's wallet address"
+          classname={formClasses.select}
+          changeHandler={handleInputChange}
+        />
+      </div>
+      <div className={formClasses.textFieldBar}>
+        <MSimpleSelectComponent
+          required={true}
+          id="inspector"
+          name="inspector"
+          label="Quality Control Inspector"
+          variant="outlined"
+          disabled={true}
+          selectedValue={result.inspectors[0]?.value}
+          options={result.inspectors ? result.inspectors : []}
+          helpText={QC_INSPECTION_HELP_TEXT}
           classname={formClasses.select}
           changeHandler={handleInputChange}
         />

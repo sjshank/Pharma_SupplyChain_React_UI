@@ -9,4 +9,5 @@ export interface IRawMaterial {
   manufacturer: string | any;
   packageStatus?: string | number | any;
   transactionBlocks?: any[];
+  inspector: string | any;
 }

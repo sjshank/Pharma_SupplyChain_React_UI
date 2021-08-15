@@ -4,18 +4,13 @@ import { IUserInfo } from "../../models/userInfo.interface";
 import MTextFieldComponent from "../../generic/MTextField";
 import MSimpleSelectComponent from "../../generic/MBasicSelect";
 import { IMedicineDP } from "../../models/medicineDP.interface";
-
-interface IMedicineBatchFields {
-  pharma: string | any;
-  shipper: string | any;
-  manufacturer: string | any;
-}
+import { getUserListForDropdown } from "../../utils/helpers";
 
 type MedicineBatchSubContractProps = {
   medicineBatchDPState: IMedicineDP;
   handleInputChange?: any;
   isEditMode?: boolean;
-  userList?: Array<IUserInfo>;
+  userList: Array<IUserInfo>;
   formStyles?: any;
 };
 
@@ -47,28 +42,7 @@ const MedicineBatchSubContractDPComponent = ({
 }: MedicineBatchSubContractProps) => {
   let formClasses = useFormStyles();
 
-  /*  Populate Registered Pharma & Transporter list */
-  const pharmas: Array<{ key: any; value: any }> = [];
-  const transporters: Array<{ key: any; value: any }> = [];
-
-  if (Array.isArray(userList)) {
-    userList.map((usr: IUserInfo) => {
-      if (
-        !usr.isDeleted &&
-        usr.userStatus === "Active" &&
-        usr.userRole === "6"
-      ) {
-        return pharmas.push({ key: usr.userName, value: usr.userAddress });
-      }
-      if (
-        !usr.isDeleted &&
-        usr.userStatus === "Active" &&
-        usr.userRole === "2"
-      ) {
-        return transporters.push({ key: usr.userName, value: usr.userAddress });
-      }
-    });
-  }
+  const result = getUserListForDropdown(userList);
 
   return (
     <div>
@@ -81,6 +55,34 @@ const MedicineBatchSubContractDPComponent = ({
           variant="outlined"
           disabled={true}
           value={medicineBatchDPState.medicineName}
+          classname={formClasses.textField}
+          changeHandler={handleInputChange}
+        />
+      </div>
+      <div className={formClasses.textFieldBar}>
+        <MTextFieldComponent
+          required={true}
+          id="description"
+          name="description"
+          type="text"
+          label="Medicine Description"
+          variant="outlined"
+          disabled={true}
+          value={medicineBatchDPState.description}
+          classname={formClasses.textField}
+          changeHandler={handleInputChange}
+        />
+      </div>
+      <div className={formClasses.textFieldBar}>
+        <MTextFieldComponent
+          required={true}
+          id="location"
+          name="location"
+          type="text"
+          label="Location"
+          variant="outlined"
+          disabled={true}
+          value={medicineBatchDPState.location}
           classname={formClasses.textField}
           changeHandler={handleInputChange}
         />
@@ -108,7 +110,7 @@ const MedicineBatchSubContractDPComponent = ({
           variant="outlined"
           disabled={isEditMode}
           selectedValue={medicineBatchDPState.pharma}
-          options={pharmas ? pharmas : []}
+          options={result.pharmas ? result.pharmas : []}
           helpText="Pharma's wallet address"
           classname={formClasses.select}
           changeHandler={handleInputChange}
@@ -124,7 +126,7 @@ const MedicineBatchSubContractDPComponent = ({
           variant="outlined"
           disabled={isEditMode}
           selectedValue={medicineBatchDPState.shipper}
-          options={transporters ? transporters : []}
+          options={result.transporters ? result.transporters : []}
           helpText="Transporter's wallet address"
           classname={formClasses.select}
           changeHandler={handleInputChange}

@@ -41,7 +41,7 @@ const registeredUsersTableHeader: Array<ITableHeader> = [
   },
 ];
 
-const registeredRawMaterialsTable: Array<ITableHeader> = [
+const materialInfoTbl: ITableHeader[] = [
   {
     name: "Material Name",
     id: "producerName",
@@ -58,14 +58,28 @@ const registeredRawMaterialsTable: Array<ITableHeader> = [
     name: "Qty",
     id: "quantity",
   },
+];
+
+const medicineInfoTbl: ITableHeader[] = [
   {
-    name: "Manufacturer",
-    id: "manufacturer",
+    name: "Medicine Name",
+    id: "medicineName",
   },
   {
-    name: "Transporter",
-    id: "shipper",
+    name: "Description",
+    id: "description",
   },
+  {
+    name: "Location",
+    id: "location",
+  },
+  {
+    name: "Qty",
+    id: "quantity",
+  },
+];
+
+const statusInfoTbl: ITableHeader[] = [
   {
     name: "Status",
     id: "packageStatus",
@@ -76,23 +90,18 @@ const registeredRawMaterialsTable: Array<ITableHeader> = [
   },
 ];
 
+const registeredRawMaterialsTable: Array<ITableHeader> = [
+  {
+    name: "Manufacturer",
+    id: "manufacturer",
+  },
+  {
+    name: "Transporter",
+    id: "shipper",
+  },
+];
+
 const rawMaterialsReceivedTable: Array<ITableHeader> = [
-  {
-    name: "Material Name",
-    id: "producerName",
-  },
-  // {
-  //   name: "Material Description",
-  //   id: "description",
-  // },
-  {
-    name: "Location",
-    id: "location",
-  },
-  {
-    name: "Qty",
-    id: "quantity",
-  },
   {
     name: "Supplier",
     id: "supplier",
@@ -101,33 +110,9 @@ const rawMaterialsReceivedTable: Array<ITableHeader> = [
     name: "Transporter",
     id: "shipper",
   },
-  {
-    name: "Status",
-    id: "packageStatus",
-  },
-  {
-    name: "Action",
-    id: "action",
-  },
 ];
 
 const medicinesManufacturedTable: Array<ITableHeader> = [
-  {
-    name: "Medicine Name",
-    id: "medicineName",
-  },
-  // {
-  //   name: "Description",
-  //   id: "description",
-  // },
-  {
-    name: "Location",
-    id: "location",
-  },
-  {
-    name: "Qty",
-    id: "quantity",
-  },
   {
     name: "Distributor",
     id: "distributor",
@@ -136,33 +121,9 @@ const medicinesManufacturedTable: Array<ITableHeader> = [
     name: "Transporter",
     id: "shipper",
   },
-  {
-    name: "Status",
-    id: "packageStatus",
-  },
-  {
-    name: "Action",
-    id: "action",
-  },
 ];
 
 const medicineBatchesReceivedTable: Array<ITableHeader> = [
-  {
-    name: "Medicine Name",
-    id: "medicineName",
-  },
-  // {
-  //   name: "Description",
-  //   id: "description",
-  // },
-  {
-    name: "Location",
-    id: "location",
-  },
-  {
-    name: "Qty",
-    id: "quantity",
-  },
   {
     name: "Manufacturer",
     id: "manufacturer",
@@ -171,60 +132,14 @@ const medicineBatchesReceivedTable: Array<ITableHeader> = [
     name: "Transporter",
     id: "shipper",
   },
-  {
-    name: "Status",
-    id: "packageStatus",
-  },
-  {
-    name: "Action",
-    id: "action",
-  },
 ];
 
-const medicineSubContractsReceivedTable: Array<ITableHeader> = [
-  {
-    name: "Sub Contract ID",
-    id: "medicineSubContract",
-  },
-  {
-    name: "Distributor",
-    id: "distributor",
-  },
-  {
-    name: "Transporter",
-    id: "shipper",
-  },
-  {
-    name: "Status",
-    id: "packageStatus",
-  },
-  {
-    name: "Action",
-    id: "action",
-  },
-];
 
 const medicineDetailsTable: Array<ITableHeader> = [
   {
-    name: "Medicine Name",
-    id: "medicineName",
+    name: "Manufacturer",
+    id: "manufacturer",
   },
-  {
-    name: "Description",
-    id: "description",
-  },
-  {
-    name: "Location",
-    id: "location",
-  },
-  {
-    name: "Qty",
-    id: "quantity",
-  },
-  // {
-  //   name: "Manufacturer",
-  //   id: "manufacturer",
-  // },
   {
     name: "",
     id: "action",
@@ -339,6 +254,89 @@ const batchInfoMedicineDetailsTable: Array<ITableHeader> = [
   },
 ];
 
+const materialInspectionTable: Array<ITableHeader> = [
+  {
+    name: "Sender",
+    id: "supplier",
+  },
+  {
+    name: "Receiver",
+    id: "manufacturer",
+  },
+];
+
+const materialShipmentTable: Array<ITableHeader> = [
+  {
+    name: "Sender",
+    id: "supplier",
+  },
+  {
+    name: "Receiver",
+    id: "manufacturer",
+  },
+];
+
+const medicineInspectionTble: Array<ITableHeader> = [
+  {
+    name: "Sender",
+    id: "manufacturer",
+  },
+  {
+    name: "Receiver",
+    id: "distributor",
+  },
+];
+
+const medicineShipmentTbl: Array<ITableHeader> = [
+  {
+    name: "Sender",
+    id: "manufacturer",
+  },
+  {
+    name: "Receiver",
+    id: "distributor",
+  },
+];
+
+const medicineBatchDPReceivedTbl: Array<ITableHeader> = [
+  {
+    name: "Manufacturer",
+    id: "manufacturer",
+  },
+  {
+    name: "Distributor",
+    id: "distributor",
+  },
+  // {
+  //   name: "Status",
+  //   id: "packageStatus",
+  // },
+  {
+    name: "Action",
+    id: "action",
+  },
+];
+
+const getMaterialInfo = () => {
+  return materialInfoTbl;
+};
+
+const getMedicineInfo = () => {
+  return medicineInfoTbl;
+};
+
+const getStatusInfo = () => {
+  return statusInfoTbl;
+};
+
+const populateMaterialTblHeaders = (customHeaders) => {
+  return [...getMaterialInfo(), ...customHeaders, ...getStatusInfo()];
+};
+
+const populateMedicineTblHeaders = (customHeaders) => {
+  return [...getMedicineInfo(), ...customHeaders, ...getStatusInfo()];
+};
+
 const useTableHeaders = (tableName: string) => {
   let headers: ITableHeader[] = [];
 
@@ -350,22 +348,19 @@ const useTableHeaders = (tableName: string) => {
       headers = registeredUsersTableHeader;
       break;
     case "registeredRawMaterials":
-      headers = registeredRawMaterialsTable;
+      headers = populateMaterialTblHeaders(registeredRawMaterialsTable);
       break;
     case "receivedRawMaterials":
-      headers = rawMaterialsReceivedTable;
+      headers = populateMaterialTblHeaders(rawMaterialsReceivedTable);
       break;
     case "medicinesManufactured":
-      headers = medicinesManufacturedTable;
+      headers = populateMedicineTblHeaders(medicinesManufacturedTable);
       break;
     case "medicineBatchesReceived":
-      headers = medicineBatchesReceivedTable;
-      break;
-    case "medicineSubContractReceived":
-      headers = medicineSubContractsReceivedTable;
+      headers = populateMedicineTblHeaders(medicineBatchesReceivedTable);
       break;
     case "medicineDetails":
-      headers = medicineDetailsTable;
+      headers = [...getMedicineInfo(), ...medicineDetailsTable];
       break;
     case "customers":
       headers = customerListTable;
@@ -378,6 +373,21 @@ const useTableHeaders = (tableName: string) => {
       break;
     case "batchInfoMedicine":
       headers = batchInfoMedicineDetailsTable;
+      break;
+    case "materialInspection":
+      headers = populateMaterialTblHeaders(materialInspectionTable);
+      break;
+    case "materialShipment":
+      headers = populateMaterialTblHeaders(materialShipmentTable);
+      break;
+    case "medicineInspection":
+      headers = populateMedicineTblHeaders(medicineInspectionTble);
+      break;
+    case "medicineShipment":
+      headers = populateMedicineTblHeaders(medicineShipmentTbl);
+      break;
+    case "medicineBatchDPReceived":
+      headers = [...getMedicineInfo(), ...medicineBatchDPReceivedTbl];
       break;
     default:
       break;

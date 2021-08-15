@@ -9,6 +9,7 @@ import { VERIFY_PROCEED_HELP_TEXT } from "../../utils/constants";
 type RawMaterialVerificationProps = {
   rawMaterialFormState: IRawMaterial;
   userList: IUserInfo[];
+  isFormDisabled?: boolean;
 };
 
 const useRawMaterialFormtyles = makeStyles((theme: Theme) => ({
@@ -43,6 +44,7 @@ const useRawMaterialFormtyles = makeStyles((theme: Theme) => ({
 const RawMaterialVerificationComponent = ({
   userList,
   rawMaterialFormState,
+  isFormDisabled,
 }: RawMaterialVerificationProps) => {
   const classes = useRawMaterialFormtyles();
   return (
@@ -58,6 +60,7 @@ const RawMaterialVerificationComponent = ({
         isEditMode={true}
         userList={userList}
         formStyles={classes}
+        isFormDisabled={isFormDisabled}
       />
     </>
   );

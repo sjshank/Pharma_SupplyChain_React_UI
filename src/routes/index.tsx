@@ -10,6 +10,8 @@ import {
   MANUFACTURER_DASHBOARD_TITLE,
   DISTRIBUTOR_DASHBOARD_TITLE,
   PHARMA_DASHBOARD_TITLE,
+  INSPECTOR_DASHBOARD_TITLE,
+  TRANSPORTER_DASHBOARD_TITLE,
 } from "../utils/constants";
 import { AdminContextProvider } from "../context/AdminContext";
 import { DialogContextProvider } from "../context/DialogContext";
@@ -69,6 +71,20 @@ export const routes: Array<RouteItem> = [
     component: lazy(() => import("../containers/Pharma")),
   },
   {
+    key: "router-inspector",
+    title: INSPECTOR_DASHBOARD_TITLE,
+    path: "/inspector",
+    enabled: true,
+    component: lazy(() => import("../containers/Inspector")),
+  },
+  {
+    key: "router-transporter",
+    title: TRANSPORTER_DASHBOARD_TITLE,
+    path: "/transporter",
+    enabled: true,
+    component: lazy(() => import("../containers/Transporter")),
+  },
+  {
     key: "router-logout",
     path: "/logout",
     title: APP_TITLE,
@@ -86,39 +102,33 @@ const AppRoute = () => {
           <DialogContextProvider>
             <AdminContextProvider>
               <SupplierContextProvider>
-                <ManufacturerContextProvider>
-                  <DistributorContextProvider>
-                    <PharmaContextProvider>
-                      {routes.map((route: RouteItem) =>
-                        route.subRoutes ? (
-                          route.subRoutes.map((item: RouteItem) => (
-                            <div key={`${item.key}-${item.title}`}>
-                              <Helmet>
-                                <title>{`${PHARMA_SUPPLY_CHAIN} | ${route.title}`}</title>
-                              </Helmet>
-                              <Route
-                                path={`${item.path}`}
-                                component={item.component || Default}
-                                exact
-                              />
-                            </div>
-                          ))
-                        ) : (
-                          <div key={`${route.key}-${route.title}`}>
-                            <Helmet>
-                              <title>{`${PHARMA_SUPPLY_CHAIN} | ${route.title}`}</title>
-                            </Helmet>
-                            <Route
-                              path={`${route.path}`}
-                              component={route.component || Default}
-                              exact
-                            />
-                          </div>
-                        )
-                      )}
-                    </PharmaContextProvider>
-                  </DistributorContextProvider>
-                </ManufacturerContextProvider>
+                {routes.map((route: RouteItem) =>
+                  route.subRoutes ? (
+                    route.subRoutes.map((item: RouteItem) => (
+                      <div key={`${item.key}-${item.title}`}>
+                        <Helmet>
+                          <title>{`${PHARMA_SUPPLY_CHAIN} | ${route.title}`}</title>
+                        </Helmet>
+                        <Route
+                          path={`${item.path}`}
+                          component={item.component || Default}
+                          exact
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div key={`${route.key}-${route.title}`}>
+                      <Helmet>
+                        <title>{`${PHARMA_SUPPLY_CHAIN} | ${route.title}`}</title>
+                      </Helmet>
+                      <Route
+                        path={`${route.path}`}
+                        component={route.component || Default}
+                        exact
+                      />
+                    </div>
+                  )
+                )}
               </SupplierContextProvider>
             </AdminContextProvider>
           </DialogContextProvider>

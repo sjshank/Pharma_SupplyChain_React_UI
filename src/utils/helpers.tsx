@@ -86,6 +86,15 @@ export const populateRoleBasedList = (users: IUserInfo[]) => {
         return usr;
       }
     }),
+    inspectorList: users.filter((usr: IUserInfo) => {
+      if (
+        !usr.isDeleted &&
+        usr.userStatus === "Active" &&
+        usr.userRole === "9"
+      ) {
+        return usr;
+      }
+    }),
   };
 };
 
@@ -164,32 +173,6 @@ export const getMedicineURL = (id: string): string => {
 export const isPublicFacing = (): boolean => {
   return location.pathname.indexOf("/medicine") > -1;
 };
-
-// export const getUserDetails = (
-//   _role: string,
-//   _address: string,
-//   userList: IUserInfo[]
-// ): any => {
-//   const userDetails: IUserInfo | any = userList.find((usr: IUserInfo) => {
-//     if (
-//       !usr.isDeleted &&
-//       usr.userStatus === "Active" &&
-//       usr.userRole === _role &&
-//       usr.userAddress?.toLowerCase() === _address?.toLowerCase()
-//     ) {
-//       return usr;
-//     }
-//   });
-//   return {
-//     userName: userDetails.userName,
-//     userAddress: userDetails.userAddress,
-//     userLocation: userDetails.userLocation,
-//     userRole: userDetails.userRole,
-//     userStatus: userDetails.userStatus,
-//     registrationDate: userDetails.registrationDate,
-//     isDeleted: userDetails.isDeleted,
-//   };
-// };
 
 export const populateUserDetails = (
   _role: any,
@@ -277,4 +260,71 @@ export const getFormattedDate = (timestamp: any) => {
   return new Date(timestamp * 1000)
     .toLocaleDateString()
     .concat(", " + new Date(timestamp * 1000).toLocaleTimeString());
+};
+
+export const getUserListForDropdown = (userList: IUserInfo[] | undefined): any => {
+  const pharmas: Array<{ key: any; value: any }> = [];
+  const transporters: Array<{ key: any; value: any }> = [];
+  const suppliers: Array<{ key: any; value: any }> = [];
+  const manufacturers: Array<{ key: any; value: any }> = [];
+  const distributors: Array<{ key: any; value: any }> = [];
+  const inspectors: Array<{ key: any; value: any }> = [];
+
+  if (Array.isArray(userList)) {
+    userList.map((usr: IUserInfo) => {
+      if (
+        !usr.isDeleted &&
+        usr.userStatus === "Active" &&
+        usr.userRole === "6"
+      ) {
+        return pharmas.push({ key: usr.userName, value: usr.userAddress });
+      }
+      if (
+        !usr.isDeleted &&
+        usr.userStatus === "Active" &&
+        usr.userRole === "2"
+      ) {
+        return transporters.push({ key: usr.userName, value: usr.userAddress });
+      }
+      if (
+        !usr.isDeleted &&
+        usr.userStatus === "Active" &&
+        usr.userRole === "1"
+      ) {
+        return suppliers.push({ key: usr.userName, value: usr.userAddress });
+      }
+      if (
+        !usr.isDeleted &&
+        usr.userStatus === "Active" &&
+        usr.userRole === "3"
+      ) {
+        return manufacturers.push({
+          key: usr.userName,
+          value: usr.userAddress,
+        });
+      }
+      if (
+        !usr.isDeleted &&
+        usr.userStatus === "Active" &&
+        usr.userRole === "5"
+      ) {
+        return distributors.push({ key: usr.userName, value: usr.userAddress });
+      }
+      if (
+        !usr.isDeleted &&
+        usr.userStatus === "Active" &&
+        usr.userRole === "9"
+      ) {
+        return inspectors.push({ key: usr.userName, value: usr.userAddress });
+      }
+    });
+  }
+  return {
+    pharmas,
+    transporters,
+    suppliers,
+    manufacturers,
+    distributors,
+    inspectors,
+  };
 };

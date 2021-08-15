@@ -2,7 +2,6 @@ import React, {
   lazy,
   MouseEventHandler,
   ReactNode,
-  Suspense,
   useContext,
   useState,
 } from "react";
@@ -20,7 +19,6 @@ import { Chip } from "@material-ui/core";
 import { DELETE_CONFIRMATION_TEXT, ROLE_BRAND } from "../../utils/constants";
 import { IUserInfo, IUserInfoContext } from "../../models/userInfo.interface";
 import { IUserFields, useStyles } from "./helper";
-import { IUserForm } from "../../models/user.interface";
 import { UserInfoContext } from "../../context/UserContext";
 import useTableHeaders from "../../hooks/useTableHeaders";
 import { DialogContext } from "../../context/DialogContext";
@@ -70,7 +68,7 @@ const RegisteredUsersComponent = ({
   //handle input change
   const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    _field: IUserForm
+    _field: any
   ) => {
     setUserFormState({
       ...userFormState,
@@ -281,7 +279,7 @@ const RegisteredUsersComponent = ({
         }
         tableName="Registered Users"
         tableId="registeredUsersTbl"
-        height="305px"
+        height="353px"
         stickyHeader={true}
       />
       {(dialogStatus.dialogId == "createUser" ||
