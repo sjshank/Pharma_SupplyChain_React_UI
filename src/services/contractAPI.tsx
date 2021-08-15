@@ -17,10 +17,12 @@ export const getTransactionData = (
           resolve(result);
         })
         .catch((err: any) => {
+          console.error("Error while getting tx object--->", err);
           reject(populateCustomErrorObject(err));
         });
     });
   } catch (e) {
+    console.error("Error while getting tx object--->", e);
     throw populateCustomErrorObject(e);
   }
 };
@@ -41,10 +43,12 @@ export const sendTransaction = (
           resolve(result);
         })
         .catch((err: any) => {
+          console.error("Error while sending tx object--->", err);
           reject(populateCustomErrorObject(err));
         });
     });
   } catch (e) {
+    console.error("Error while sending tx object--->", e);
     throw populateCustomErrorObject(e);
   }
 };

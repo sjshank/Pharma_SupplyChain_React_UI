@@ -31,4 +31,4 @@ const NotAuthorizedComponent = () => {
   );
 };
 
-export default NotAuthorizedComponent;
+export default React.memo(NotAuthorizedComponent);

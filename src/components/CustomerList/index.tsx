@@ -8,7 +8,6 @@ import MBasicTableComponent from "../../generic/MBasicTable";
 import TableBody from "@material-ui/core/TableBody";
 import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
-import MTooltipComponent from "../../generic/MTooltip";
 import CurrencyFormat from "react-currency-format";
 import useTableHeaders from "../../hooks/useTableHeaders";
 import MTableHeadersComponent from "../../generic/TableHeaders";
@@ -25,6 +24,7 @@ import MedicineQrCodeModalComponent from "../MedicineQrCodeModal";
 import { getMedicineURL } from "../../utils/helpers";
 import { DialogContext } from "../../context/DialogContext";
 import { IDialogContext } from "../../models/dialog.interface";
+import MTableCellComponent from "../../generic/MTableCell";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -97,22 +97,22 @@ const CustomerListComponent = () => {
         )}
         {customers.map((row: ICustomer) => (
           <TableRow key={row.medicineId}>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              <MTooltipComponent title={row.customerName} placement="top">
-                <span>{row.customerName}</span>
-              </MTooltipComponent>
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.customerAge}
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              <MTooltipComponent title={row.doctorName} placement="top">
-                <span>{row.doctorName}</span>
-              </MTooltipComponent>
-            </TableCell>
-            <TableCell align="left" className={classes.tableBodyCell}>
-              {row.quantity}
-            </TableCell>
+            <MTableCellComponent
+              text={row.customerName}
+              classname={classes.tableBodyCell}
+            />
+            <MTableCellComponent
+              text={row.customerAge}
+              classname={classes.tableBodyCell}
+            />
+            <MTableCellComponent
+              text={row.doctorName}
+              classname={classes.tableBodyCell}
+            />
+            <MTableCellComponent
+              text={row.quantity}
+              classname={classes.tableBodyCell}
+            />
             <TableCell align="left" className={classes.tableBodyCell}>
               <CurrencyFormat
                 value={parseInt(row.amountPaid)}
@@ -176,7 +176,7 @@ const CustomerListComponent = () => {
         }
         tableName="Customer List"
         tableId="customerListTbl"
-        // height="120px"
+        height="200px"
         stickyHeader={true}
       />
     </Paper>

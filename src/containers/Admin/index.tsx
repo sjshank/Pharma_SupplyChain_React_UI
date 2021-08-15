@@ -139,7 +139,7 @@ const AdminDashboardComponent = () => {
     try {
       if (contractInstance && registeredUsers.length === 0) {
         toggleSpinner();
-        loadUsers(contractInstance, selectedAccount)
+        loadUsers()
           .then((res) => {
             if (Array.isArray(res)) {
               const { _users, activeUsersCount } =
@@ -161,17 +161,17 @@ const AdminDashboardComponent = () => {
                 }
                 //total medicine shipped count
                 if (USER_ROLE_LIST[user.userRole] == "distributor") {
-                  const totalMedicineBatchesCountResponse = getTransactionData(
-                    contractInstance,
-                    "getTotalMedicineBatchesShippedCount",
-                    selectedAccount,
-                    user.userAddress
-                  );
-                  totalMedicineBatchesCountResponse.then((res: any) => {
-                    totalMedicineBatchesShippedCountRef.current =
-                      totalMedicineBatchesShippedCountRef.current +
-                      parseInt(res);
-                  });
+                  // const totalMedicineBatchesCountResponse = getTransactionData(
+                  //   contractInstance,
+                  //   "getTotalMedicineBatchesShippedCount",
+                  //   selectedAccount,
+                  //   user.userAddress
+                  // );
+                  // totalMedicineBatchesCountResponse.then((res: any) => {
+                  //   totalMedicineBatchesShippedCountRef.current =
+                  //     totalMedicineBatchesShippedCountRef.current +
+                  //     parseInt(res);
+                  // });
                 }
                 //total medicine delivered count
                 if (USER_ROLE_LIST[user.userRole] == "pharma") {
@@ -228,7 +228,7 @@ const AdminDashboardComponent = () => {
       );
       result
         .then((res: any) => {
-          loadUsers(contractInstance, selectedAccount).then((res: any) => {
+          loadUsers().then((res: any) => {
             if (Array.isArray(res)) {
               _showSuccessToast(USER_REGISTERED_SUCCESS, res);
             }
@@ -261,7 +261,7 @@ const AdminDashboardComponent = () => {
       );
       result
         .then((res: any) => {
-          loadUsers(contractInstance, selectedAccount).then((res: any) => {
+          loadUsers().then((res: any) => {
             _showSuccessToast(USER_UPDATED_SUCCESS, res);
           });
         })
@@ -290,7 +290,7 @@ const AdminDashboardComponent = () => {
       );
       result
         .then((res: any) => {
-          loadUsers(contractInstance, selectedAccount).then((res: any) => {
+          loadUsers().then((res: any) => {
             _showSuccessToast(USER_DELETED_SUCCESS, res);
           });
         })
@@ -467,7 +467,6 @@ const AdminDashboardComponent = () => {
           addressBarList={populateContractAddressBarData()}
         />
         {populateUserRolesGrid()}
-        <BatchInfoComponent />
       </div>
     </DashboardLayout>
   );

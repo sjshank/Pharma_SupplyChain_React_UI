@@ -37,21 +37,27 @@ const MedicineDistributorTimelineBoxComponent = ({
               value={dataInfo.quantity}
               classes={classes}
             />
-            <ListItemPairComponent
-              label="Distributed From"
-              value={dataInfo.distributorDetails.userLocation}
-              classes={classes}
-            />
-            <ListItemPairComponent
-              label="Logistic Partner"
-              value={dataInfo.transporterDetails.userName}
-              classes={classes}
-            />
-            <ListItemPairComponent
-              label="Receiver"
-              value={dataInfo.pharmaName}
-              classes={classes}
-            />
+            {dataInfo.distributorDetails && (
+              <ListItemPairComponent
+                label="Distributed From"
+                value={dataInfo.distributorDetails.userLocation}
+                classes={classes}
+              />
+            )}
+            {dataInfo.pharmaDetails && (
+              <>
+                <ListItemPairComponent
+                  label="Logistic Partner"
+                  value={dataInfo.transporterDetails.userName}
+                  classes={classes}
+                />
+                <ListItemPairComponent
+                  label="Receiver"
+                  value={dataInfo.pharmaDetails.userName}
+                  classes={classes}
+                />
+              </>
+            )}
             <ListItemPairComponent
               label="Status"
               value={

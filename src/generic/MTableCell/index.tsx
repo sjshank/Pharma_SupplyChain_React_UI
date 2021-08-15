@@ -3,7 +3,7 @@ import TableCell from "@material-ui/core/TableCell";
 import MTooltipComponent from "../MTooltip";
 
 type CellProps = {
-  text: string;
+  text: string | any;
   classname: any;
   placement?: any;
 };

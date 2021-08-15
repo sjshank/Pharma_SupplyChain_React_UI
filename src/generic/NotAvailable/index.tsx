@@ -11,4 +11,4 @@ const NotAvailableComponent = () => {
   );
 };
 
-export default NotAvailableComponent;
+export default React.memo(NotAvailableComponent);

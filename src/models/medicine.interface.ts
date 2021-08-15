@@ -10,4 +10,5 @@ export interface IMedicine {
   distributor?: string | any;
   packageStatus?: string | number | any;
   transactionBlocks?: any[];
+  inspector?: string | any;
 }

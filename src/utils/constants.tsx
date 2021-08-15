@@ -16,6 +16,8 @@ export const ROLE_BASED_ROUTES = Object.freeze({
   manufacturer: "/manufacturer",
   distributor: "/distributor",
   pharma: "/pharma",
+  transporter: "/transporter",
+  inspector: "/inspector",
 });
 
 export const NOT_AUTHORIZED_ERR =
@@ -50,6 +52,13 @@ export const USER_ROLES = Object.freeze({
       roleCode: 8,
     },
     {
+      roleName: "Inspector",
+      permission: "Quality Checker",
+      color: "#fff",
+      bgColor: "#1E56A0",
+      roleCode: 9,
+    },
+    {
       roleName: "Supplier",
       permission: "Raw Material Supplier",
       color: "#fff",
@@ -60,28 +69,28 @@ export const USER_ROLES = Object.freeze({
       roleName: "Manufacturer",
       permission: "Medicine Batch Creator",
       color: "#fff",
-      bgColor: "#FA163F",
+      bgColor: "#87431D",
       roleCode: 3,
     },
     {
       roleName: "Distributor",
       permission: "Sub-Medicine Batch Distributor",
       color: "#fff",
-      bgColor: "#17B978",
+      bgColor: "#9A0F98",
       roleCode: 5,
     },
     {
       roleName: "Pharma",
       permission: "Medicine Seller",
       color: "#fff",
-      bgColor: "#E79C2A",
+      bgColor: "#007880",
       roleCode: 6,
     },
     {
       roleName: "Transporter",
       permission: "Goods Transporter",
       color: "#fff",
-      bgColor: "#444444",
+      bgColor: "#522546",
       roleCode: 2,
     },
   ],
@@ -94,23 +103,31 @@ export const ROLE_BRAND: any = {
   },
   transporter: {
     color: "#fff",
-    bgColor: "#444444",
+    bgColor: "#522546",
   },
   manufacturer: {
     color: "#fff",
-    bgColor: "#FA163F",
+    bgColor: "#87431D",
   },
   distributor: {
     color: "#fff",
-    bgColor: "#17B978",
+    bgColor: "#9A0F98",
   },
   pharma: {
     color: "#fff",
-    bgColor: "#E79C2A",
+    bgColor: "#007880",
   },
   admin: {
     color: "#fff",
     bgColor: "#053742",
+  },
+  inspector: {
+    color: "#fff",
+    bgColor: "#1E56A0",
+  },
+  rejected: {
+    color: "#fff",
+    bgColor: "#D72323",
   },
 };
 
@@ -124,7 +141,20 @@ export const USER_ROLE_LIST: Array<string> = [
   "pharma",
   "revoke",
   "admin",
+  "inspector",
 ];
+
+export const ROLE_ASSOCIATED_COLORS = Object.freeze({
+  "1": ROLE_BRAND["supplier"]["bgColor"],
+  "2": ROLE_BRAND["transporter"]["bgColor"],
+  "3": ROLE_BRAND["manufacturer"]["bgColor"],
+  // "4": ROLE_BRAND["wholesaler"]["bgColor"],
+  "5": ROLE_BRAND["distributor"]["bgColor"],
+  "6": ROLE_BRAND["pharma"]["bgColor"],
+  // "7": ROLE_BRAND["revoke"]["bgColor"],
+  "8": ROLE_BRAND["admin"]["bgColor"],
+  "9": ROLE_BRAND["inspector"]["bgColor"],
+});
 
 export const TOAST_OPTIONS = Object.freeze({
   autoDismiss: true,
@@ -145,33 +175,55 @@ export const MED_BATCHES_SHIPMENT_STATUS =
 //Supplier Dashboard Constants
 export const SUPPLIER_DASHBOARD_TITLE = "Raw Material Supplier Dashboard";
 export const MATERIAL_SHIPPMENT_STATUS_LIST_AT_SUPPLIER: Array<string> = [
-  "At Producer",
-  "Package in Transit",
-  "Delivered to Manufacturer",
+  "Package Registered",
+  "Under Quality Control check",
+  "Rejected by Inspector",
+  "Approved & Shipment initiated",
+  "Picked by Transporter",
+  "Delivered at Manufacturer",
+  "Rejected by Manufacturer",
+  "Approved by Manufacturer",
 ];
+export const SEND_FOR_INSPECTION_TEXT =
+  "This action will submit a request to associated Quality Control Inspector for raw material inspection. you will no longer allow to make any updates further. Would you like to proceed ?";
 export const INITIATE_SHIPMENT_TEXT =
   "This action will initiate shipment of Raw Material package to associated Manufacturer. You will no longer allow to make any updates further.";
 
+export const QC_INSPECTION_HELP_TEXT =
+  "Quality checker for inspecting temperature, weight, moisture etc.";
+export const MATERIAL_INITIATE_QC = "Initiate Quality Control Inspection";
+export const REG_NEW_MATERIAL = "Register Raw Material";
+export const EDIT_MATERIAL = "Edit Raw Material";
 export const TOTAL_RAW_MATERIALS = "Total Raw Materials";
 export const MANUFACTURERS_ASSOC = "Manufacturers Associated";
 export const TRANSPORTERS_ASSOC = "Transporters Associated";
 export const RAW_MATERIAL_REGISTERED = "Raw material registered.";
 export const RAW_MATERIAL_UPDATED = "Raw material updated.";
 export const MATERIAL_PACKAGE_SHIPMENT = "Material package shipment initiated.";
+export const MATERIAL_SEND_FOR_INSPECTION =
+  "Quality control inspection initiated for Raw Material.";
 
 //Manufacturer Dashboard Constants
 export const MANUFACTURER_DASHBOARD_TITLE = "Medicine Manufacturer Dashboard";
 export const MATERIAL_SHIPPMENT_STATUS_LIST_AT_MANUFACTURER: Array<string> = [
-  "At Producer",
-  "Package Received",
-  "Approved",
+  "Package Registered",
+  "Under Quality Control check",
+  "Rejected by Inspector",
+  "Approved & Shipment initiated",
+  "Picked by Transporter",
+  "Delivered at Manufacturer",
+  "Rejected by Manufacturer",
+  "Approved by Manufacturer",
 ];
 export const MEDICINE_SHIPPMENT_STATUS_LIST_AT_MANUFACTURER: Array<string> = [
-  "At Manufacturer",
-  "Batch in Transit",
-  "Delivered to Distributor",
-  "Transfer Initiated to Pharma",
-  "Delivered to Pharma",
+  "Batch Registered",
+  "Under Quality Control check",
+  "Rejected by Inspector",
+  "Approved & Shipment initiated",
+  "Picked by Transporter",
+  "Delivered at Distributor",
+  "Rejected by Distributor",
+  "Approved by Distributor",
 ];
 export const VERIFY_PROCEED_HELP_TEXT =
   "Verify received raw material & proceed with medicine batch details registration.";
@@ -183,15 +235,17 @@ export const LOGISTICS_TAGGED = "Logistics Tagged";
 export const MEDICINE_BATCH_REGISTERED = "Medicine batch registered.";
 export const MEDICINE_BATCH_UPDATED = "Medicine batch updated.";
 export const MEDICINE_BATCH_SHIPMENT = "Medicine batch shipment initiated.";
+export const MEDICINE_SEND_FOR_INSPECTION =
+  "Quality control inspection initiated for Medicine batch.";
 
 //Distributor Dashboard Constants
 export const DISTRIBUTOR_DASHBOARD_TITLE = "Medicine Distributor Dashboard";
-export const MEDICINE_SHIPPMENT_STATUS_LIST_AT_DISTRIBUTOR: Array<string> = [
-  "At Manufacturer",
-  "Batch Received",
-  "",
-  "Transfer Initiated",
-  "Delivered to Pharma",
+export const MEDICINE_SHIPPMENT_STATUS_LIST_AT_DISTRIBUTOR: string[] = [
+  "Transfer Request Submitted",
+  "Picked by Transporter",
+  "Delivered at Pharma Shop",
+  "Rejected by Pharma Shop",
+  "Approved by Pharma Shop",
 ];
 export const VERIFY_PROCEED_HELP_TEXT_AT_DIST =
   "Verify received medicine batch details & proceed with Pharmaceutical request.";
@@ -202,6 +256,8 @@ export const MEDICINE_INITIATE_SHIPMENT_TEXT =
 export const TOTAL_MEDICINES_RECVD = "Total Medicines Received";
 export const PHARMA_TAGGED = "Pharmaceuticals Tagged";
 export const MEDICINE_BATCHES_RCVD_MD = "Initiate & Transfer Medicine Batch";
+export const MEDICINE_SUB_BATCH_TRANSFER =
+  "Transfer request submitted for medicine batch.";
 
 //Pharma Dashboard Constants
 export const PHARMA_DASHBOARD_TITLE = "Pharma Shop Dashboard";
@@ -212,6 +268,10 @@ export const MEDICINE_SHIPPMENT_STATUS_LIST_AT_PHARMA: Array<string> = [
   "Batch received at Pharma",
   "Medicine status updated",
 ];
+
+export const MEDICINE_BATCH_APPROVED_BY_PHARMA = "Medicine batch approved.";
+export const MEDICINE_BATCH_REJECTED_BY_PHARMA =
+  "Medicine batch rejected & assigned back to distributor.";
 
 export const MEDICINE_SUB_CONTRACT_SHIPPMENT_STATUS_LIST_AT_PHARMA: Array<string> =
   ["In Transit", "Batch Received", "Updated", "Delivered"];
@@ -250,15 +310,11 @@ export const MEDICINE_SALE_STATUS_AT_PHARMA: Array<{
 }> = [
   {
     key: "Sold Out",
-    value: "4",
-  },
-  {
-    key: "Expired",
     value: "2",
   },
   {
-    key: "Damaged",
-    value: "3",
+    key: "Expired",
+    value: "1",
   },
 ];
 
@@ -275,6 +331,59 @@ export const SHOW_LESS = "Show Less";
 export const MEDICINE_SOLD_TO_CUSTOMER = "Buyer's Information";
 export const CUSTOMER_FORM_TEXT =
   "Submit buyer information & update medicine status.";
+
+/**** QUALITY CONTROL INSPECTOR ************/
+
+export const INSPECTOR_DASHBOARD_TITLE = "Quality Control Inspection Board";
+export const MATERIALS_FOR_INSPECTION =
+  "Materials Available For Quality Control Inspection";
+export const MATERIALS_COMPLETED_INSPECTION =
+  "Materials Completed Quality Control Inspection";
+
+export const MEDICINES_FOR_INSPECTION =
+  "Medicine Batches Available For Quality Control Inspection";
+export const MEDICINES_COMPLETED_INSPECTION =
+  "Medicine Batches Completed Quality Control Inspection";
+
+export const REJECT_RM = "Reject Raw Material";
+export const REJECT_AM = "Approve Raw Material";
+export const MATERIAL_QC_NOT_MEET =
+  "This raw material does not meet defined quality control requirements. Would like to reject ?";
+export const MATERIAL_QC_MEET =
+  "This raw material meet all the defined quality control requirements. Would like to approve & proceed with shipment ?";
+export const RAW_MATERIAL_APPROVED_SENT_FOR_SHIPMENT =
+  "Raw material approved & sent for shipment.";
+export const RAW_MATERIAL_REJECTED_SENT_TO_SUPPLIER =
+  "Raw material rejected & assigned back  to supplier.";
+
+export const MEDICINE_APPROVED_SENT_FOR_SHIPMENT =
+  "Medicine batch approved & sent for shipment.";
+export const MEDICINE_REJECTED_SENT_TO_MANUF =
+  "Medicine batch rejected & assigned back  to manufacturer.";
+
+/************************************** */
+
+/**** GOODS TRANSPORTS ************/
+
+export const TRANSPORTER_DASHBOARD_TITLE = "Goods Transporter Dashboard";
+export const INITIATE_SHIPMENT_HELP_TEXT =
+  "Initiate raw material package shipment";
+export const MATERIAL_SHIPPED_BY_TRANS =
+  "Raw Material package successfully shipped to associated manufacturer";
+export const MATERIAL_DELIVERED_BY_TRANS =
+  "Raw Material package successfully delievered to associated manufacturer";
+export const INITIATE_MEDICINE_SHIPMENT_HELP_TEXT =
+  "Initiate medicine batch shipment";
+export const MEDICINE_SHIPPED_BY_TRANS =
+  "Medicine batch successfully shipped to associated distributor";
+export const MEDICINE_DELIVERED_BY_TRANS =
+  "Medicine batch successfully delivered to associated distributor";
+export const MEDICINEDP_SHIPPED_BY_TRANS =
+  "Medicine batch successfully shipped to associated pharma shop";
+export const MEDICINEDP_DELIVERED_BY_TRANS =
+  "Medicine batch successfully delivered to associated pharma shop";
+
+/*************************************** */
 
 /**** CUSTOM ERRORS ****/
 export const CUSTOM_ERROR_MESSAGES: Array<{
@@ -373,8 +482,14 @@ export const CUSTOM_ERROR_MESSAGES: Array<{
     keyword: "M_MUST_AT_APRD",
     errMsg: "Action denied. Medicine is not approved by receiver.",
   },
+  {
+    code: -32015,
+    keyword: "IN_PROCESS",
+    errMsg:
+      "Unable to proceed futher as previous process is still under progress.",
+  },
 ];
 
-export const TRACK_UPDATES = "Scan & Track Medicine Batch Updates";
+export const TRACK_UPDATES = "Medicine Batch Updates";
 export const CONTENT_LOADING = "Please wait...";
 export const SUPPLY_CHAIN_UPDATES_PAGE_TITLE = "Medicine Supply Chain Updates";

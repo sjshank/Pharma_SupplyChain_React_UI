@@ -37,4 +37,4 @@ const MTypographyComponent = ({
   );
 };
 
-export default MTypographyComponent;
+export default React.memo(MTypographyComponent);

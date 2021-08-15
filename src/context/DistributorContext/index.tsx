@@ -10,6 +10,8 @@ const Distributor_Initial_State: IDistributorContext = {
   medicineBatchesReceivedFromManuf: [] as IMedicine[],
   medicineBatchesTransferredToPharma: [] as IMedicineDP[],
   storeDistributorDashboardData: undefined,
+  updateReceivedMedicines: undefined,
+  updateTransferredMedicines: undefined,
 };
 
 const DistributorContext = React.createContext<IDistributorContext>(
@@ -33,6 +35,20 @@ const DistributorContextProvider = (props: any) => {
     });
   };
 
+  const updateMedicineListReceivedFromManuf = (_medicinesReceived: any[]) => {
+    dispatchDistributorContextAction({
+      type: actionTypes.SET_RECEIEVED_MEDICINES,
+      medicinesReceived: _medicinesReceived,
+    });
+  };
+
+  const updateTransferredMedicineDPList = (_medicinesTransferred: any[]) => {
+    dispatchDistributorContextAction({
+      type: actionTypes.SET_TRANSFERRED_MEDICINES,
+      medicinesTransferred: _medicinesTransferred,
+    });
+  };
+
   return (
     <DistributorContext.Provider
       value={{
@@ -42,6 +58,8 @@ const DistributorContextProvider = (props: any) => {
         medicineBatchesTransferredToPharma:
           DistributorContextState.medicineBatchesTransferredToPharma,
         storeDistributorDashboardData: storeDistributorDashboardDataHandler,
+        updateReceivedMedicines: updateMedicineListReceivedFromManuf,
+        updateTransferredMedicines: updateTransferredMedicineDPList,
       }}
     >
       {props.children}

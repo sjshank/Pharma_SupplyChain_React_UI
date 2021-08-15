@@ -11,11 +11,11 @@ type MSwitchProps = {
   switchColor?: "primary" | "secondary" | "default" | undefined;
   label: string;
   labelPlacement: "end" | "start" | "top" | "bottom" | undefined;
-  switchClassname: any;
+  switchClassname?: any;
   checked?: boolean;
   disabled?: boolean;
   style?: any;
-  changeHandler: (e: any, param?: any) => void;
+  changeHandler?: (e: any, param?: any) => void;
 };
 
 const MSwitchComponent = ({
@@ -54,4 +54,4 @@ const MSwitchComponent = ({
   );
 };
 
-export default MSwitchComponent;
+export default React.memo(MSwitchComponent);

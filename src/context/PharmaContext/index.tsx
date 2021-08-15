@@ -6,13 +6,15 @@ import { reducer } from "./reducer";
 
 const Pharma_Initial_State: IPharmaContext = {
   medicineBatchesReceivedFromDist: [] as IMedicineDP[],
-  expiredCount: 0,
-  approvedCount: 0,
-  medicineIDs: [] as string[],
-  subContractIDs: [],
   customers: [],
-  storePharmaDashboardData: undefined,
   storeCustomerData: undefined,
+  approvedMedicinesDP: [] as IMedicineDP[],
+  expiredMedicinesDP: [] as IMedicineDP[],
+  populateApprovedMedicinesDP: (approvedMedicinesDP: Array<IMedicineDP>) =>
+    undefined,
+  populateExpiredMedicinesDP: (expiredMedicinesDP: Array<IMedicineDP>) =>
+    undefined,
+  updateReceivedMedicineDPBatches: (medicinesDP: IMedicineDP[]) => undefined,
 };
 
 const PharmaContext = React.createContext<IPharmaContext>(Pharma_Initial_State);
@@ -23,29 +25,33 @@ const PharmaContextProvider = (props: any) => {
     Pharma_Initial_State
   );
 
-  const storePharmaDashboardDataHandler = (
-    _medicines: IMedicineDP[] = [],
-    _expired: number = 0,
-    _approved: number = 0,
-    _medicineIds: String[] = [],
-    _customers: any[] = [],
-    _subContracts: any[] = []
-  ) => {
-    dispatchPharmaContextAction({
-      type: actionTypes.SET_PHARMA_DASHBOARD_DATA,
-      medicines: _medicines,
-      expired: _expired,
-      approved: _approved,
-      medicineIds: _medicineIds,
-      customers: _customers,
-      subContracts: _subContracts,
-    });
-  };
-
   const storeCustomerDataHandler = (_customers: any[]) => {
     dispatchPharmaContextAction({
       type: actionTypes.SET_CUSTOMER_DATA,
       customers: _customers,
+    });
+  };
+
+  const updateReceivedMedicineDPBatchesHandler = (
+    _medicinesDP: IMedicineDP[]
+  ) => {
+    dispatchPharmaContextAction({
+      type: actionTypes.UPDATE_MEDICINESDP_BATCHES,
+      medicinesDP: _medicinesDP,
+    });
+  };
+
+  const populateApprovedMedicinesDPHandler = (_medicinesDP: IMedicineDP[]) => {
+    dispatchPharmaContextAction({
+      type: actionTypes.SET_APPROVED_MEDICINEDP_BATCHES,
+      medicinesDP: _medicinesDP,
+    });
+  };
+
+  const populateExpiredMedicinesDPHandler = (_medicinesDP: IMedicineDP[]) => {
+    dispatchPharmaContextAction({
+      type: actionTypes.SET_EXPIRED_MEDICINEDP_BATCHES,
+      medicinesDP: _medicinesDP,
     });
   };
 
@@ -54,13 +60,13 @@ const PharmaContextProvider = (props: any) => {
       value={{
         medicineBatchesReceivedFromDist:
           PharmaContextState.medicineBatchesReceivedFromDist,
-        expiredCount: PharmaContextState.expiredCount,
-        approvedCount: PharmaContextState.approvedCount,
-        medicineIDs: PharmaContextState.medicineIDs,
-        subContractIDs: PharmaContextState.subContractIDs,
         customers: PharmaContextState.customers,
-        storePharmaDashboardData: storePharmaDashboardDataHandler,
+        approvedMedicinesDP: PharmaContextState.approvedMedicinesDP,
+        expiredMedicinesDP: PharmaContextState.expiredMedicinesDP,
         storeCustomerData: storeCustomerDataHandler,
+        updateReceivedMedicineDPBatches: updateReceivedMedicineDPBatchesHandler,
+        populateApprovedMedicinesDP: populateApprovedMedicinesDPHandler,
+        populateExpiredMedicinesDP: populateExpiredMedicinesDPHandler,
       }}
     >
       {props.children}

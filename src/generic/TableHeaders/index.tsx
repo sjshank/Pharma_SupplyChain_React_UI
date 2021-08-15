@@ -31,4 +31,4 @@ const MTableHeadersComponent = ({
   );
 };
 
-export default MTableHeadersComponent;
+export default React.memo(MTableHeadersComponent);

@@ -1,23 +1,41 @@
 import { IPharmaContext } from "../../models/pharma.interface";
 
-export const storePharmaDashboardDetails = (
+export const storeCustomerData = (
   state: IPharmaContext,
   action: any
-) => {
+): IPharmaContext => {
   return {
     ...state,
-    medicineBatchesReceivedFromDist: action["medicines"],
-    expiredCount: action["expired"],
-    approvedCount: action["approved"],
-    medicineIDs: action["medicineIds"],
-    subContractIDs: action["_subContracts"],
     customers: action["customers"],
   };
 };
 
-export const storeCustomerData = (state: IPharmaContext, action: any) => {
+export const updateMedicineDPBatches = (
+  state: IPharmaContext,
+  action: any
+): IPharmaContext => {
   return {
     ...state,
-    customers: action["customers"],
+    medicineBatchesReceivedFromDist: action["medicinesDP"],
+  };
+};
+
+export const setApprovedMedicinesDP = (
+  state: IPharmaContext,
+  action: any
+): IPharmaContext => {
+  return {
+    ...state,
+    approvedMedicinesDP: action["medicinesDP"],
+  };
+};
+
+export const setExpiredMedicinesDP = (
+  state: IPharmaContext,
+  action: any
+): IPharmaContext => {
+  return {
+    ...state,
+    expiredMedicinesDP: action["medicinesDP"],
   };
 };

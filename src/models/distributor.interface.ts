@@ -6,4 +6,6 @@ export interface IDistributorContext {
   medicineBatchesReceivedFromManuf: IMedicine[];
   medicineBatchesTransferredToPharma: IMedicineDP[];
   storeDistributorDashboardData: any;
+  updateReceivedMedicines?: any;
+  updateTransferredMedicines?: any;
 }

@@ -58,6 +58,7 @@
     "react-router-dom": "^5.2.0",
     "react-scroll-up-button": "^1.6.4",
     "react-toast-notifications": "^2.4.4",
+    "recharts": "^2.0.10",
     "redux": "^4.1.0",
     "redux-thunk": "^2.3.0",
     "web3": "^1.4.0"

@@ -1,12 +1,15 @@
 import { IMedicineDP } from "./medicineDP.interface";
 
-export interface IPharmaContext {
+export interface IPharmaContext extends IPharmaUpdate {
   medicineBatchesReceivedFromDist: IMedicineDP[];
-  expiredCount: number | any;
-  approvedCount: number | any;
-  medicineIDs: string[];
-  subContractIDs?: any[];
   customers: any[];
-  storePharmaDashboardData: any;
   storeCustomerData: any;
+}
+
+interface IPharmaUpdate {
+  approvedMedicinesDP: IMedicineDP[];
+  expiredMedicinesDP: IMedicineDP[];
+  populateApprovedMedicinesDP(approvedMedicinesDP: Array<IMedicineDP>): any;
+  populateExpiredMedicinesDP(expiredMedicinesDP: Array<IMedicineDP>): any;
+  updateReceivedMedicineDPBatches(medicinesDP: Array<IMedicineDP>): any;
 }

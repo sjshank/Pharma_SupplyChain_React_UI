@@ -10,6 +10,7 @@ import { ToastContextProvider } from "./context/ToastContext";
 import { isPublicFacing } from "./utils/helpers";
 import PublicRoute from "./routes/public";
 import LoaderComponent from "./generic/Loader";
+import ScrollUp from "./generic/ScrollUp";
 
 const App = () => {
   const appRoute = AppRoute();
@@ -45,6 +46,7 @@ const App = () => {
         </Web3ContextProvider>
       )}
       {isPublicFacing() && publicRoute}
+      <ScrollUp />
     </>
   );
 };

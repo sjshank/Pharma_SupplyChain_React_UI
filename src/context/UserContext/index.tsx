@@ -13,7 +13,8 @@ const UserInfo_Initial_State: IUserInfo = {
   userAddress: null,
   userLocation: "",
   userRoleName: "",
-  isDeleted:false
+  isDeleted: false,
+  registrationDate: 0,
 };
 
 const UserInfo_Action_Initial_State: IUserInfoAction = {
