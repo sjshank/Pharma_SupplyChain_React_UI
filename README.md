@@ -1,1 +1,1 @@
-# Pharma_SupplyChain_React_UI React App
+# Pharma_SupplyChain_React_UI
