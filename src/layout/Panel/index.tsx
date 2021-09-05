@@ -36,7 +36,7 @@ const PanelLayout = ({ panelTitle, styleItem, children }: PanelProps) => {
     <div className={classes.root}>
       <Grid container spacing={2}>
         <Grid item xs={12} sm={12} lg={12} style={styleItem}>
-          <Paper className={classes.paper} elevation={3} square={true}>
+          <Paper component="form" className={classes.paper} elevation={3} square={true}>
             <MTypographyComponent
               text={panelTitle}
               variant="h6"

@@ -112,7 +112,7 @@ const SupplyBoardComponent = (props: any) => {
         toggleSpinner();
         getTransactionData(
           contractInstance,
-          "getListOfRegisteredRawMateriaAddress",
+          "getListOfRegisteredRawMaterial",
           selectedAccount,
           selectedAccount
         )

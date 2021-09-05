@@ -143,7 +143,7 @@ const ManufacturingBoardComponent = (props: any) => {
             //Get all the manufactured medicine ids
             const response = getTransactionData(
               contractInstance,
-              "getManufacturedMedicinesAddress",
+              "getManufacturedMedicines",
               selectedAccount,
               selectedAccount
             );
